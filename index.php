@@ -72,6 +72,7 @@ function parse_md_to_pbn_deal($mdLine) {
 function lin_to_pbn($lin) {
     $parts = explode('|', $lin);
     $tags = [];
+    $pbn = '';
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tags[$parts[$i]][] = $parts[$i + 1];
     }
