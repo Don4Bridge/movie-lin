@@ -127,6 +127,9 @@ $startIndex = array_search($dealer, $rotation);
             $contractBid = $bid;
         }
     }
+    $auctionClean = array_map(function($bid) {
+    return str_starts_with($bid, 'mb|') ? substr($bid, 3) : $bid;
+}, $auction);
     $lastBid = $contractBid ?? 'Pass';
     $lastBid = preg_replace('/^(\d)N$/', '$1NT', $lastBid);
     error_log("🧪 Auction passed to determineDeclarer: " . json_encode($auction));
