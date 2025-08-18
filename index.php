@@ -1,4 +1,4 @@
-function normalize_lin_preserving_explanations($lin) {
+function normalize_lin_preserving_order($lin) {
     $parts = explode('|', $lin);
     $rawPairs = [];
     $boardNumber = 'unknown';
@@ -30,23 +30,8 @@ function normalize_lin_preserving_explanations($lin) {
         }
     }
 
-    // Reorder an| tags: move each an| directly after its preceding mb| or mc|
-    $reordered = [];
-    for ($i = 0; $i < count($rawPairs); $i++) {
-        $reordered[] = $rawPairs[$i];
-
-        $tag = $rawPairs[$i][0];
-        if (($tag === 'mb' || $tag === 'mc') && isset($rawPairs[$i + 1])) {
-            $nextTag = $rawPairs[$i + 1][0];
-            if ($nextTag === 'an') {
-                $reordered[] = $rawPairs[$i + 1];
-                $i++; // Skip the an| we just inserted
-            }
-        }
-    }
-
-    // Combine injected tags + reordered pairs
-    $finalPairs = array_merge($tagsToInject, $reordered);
+    // Combine injected tags + original pairs
+    $finalPairs = array_merge($tagsToInject, $rawPairs);
 
     // Rebuild LIN string
     $normalized = '';
