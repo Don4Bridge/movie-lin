@@ -11,9 +11,9 @@ function normalizeLin($lin) {
 
     // Ensure st| tag is present and non-empty
     if (strpos($lin, 'st|') !== false) {
-        $lin = preg_replace('/st\|\|/', 'st|Match|', $lin);
+        $lin = preg_replace('/st\|\|/', 'st|BBO Tournament|', $lin);
     } else {
-        $lin = 'st|Match|' . $lin;
+        $lin = 'st|BBO Tournament|' . $lin;
     }
 
     // Normalize md| tag
