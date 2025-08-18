@@ -137,9 +137,10 @@ $startIndex = array_search($dealer, $rotation);
  * @param array $auction Array of mb| bids (e.g. ['1N', '2C', 'P', '2D', ...])
  * @return string Declarer seat ('N', 'E', 'S', 'W')
  */
- echo "<pre>";
+echo "<pre>";
 var_dump($dealer);
-var_dump(count($rotation));
+echo "Rotation count: " . (isset($rotation) && is_array($rotation) ? count($rotation) : 'undefined') . "\n";
+var_dump($rotation ?? 'rotation not set');
 echo "</pre>";
    
 function determineDeclarer(string $dealer, array $auction): string {
