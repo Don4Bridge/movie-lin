@@ -46,6 +46,24 @@ function normalize_lin_with_board($lin) {
     return [implode('|', $ordered) . '|', $boardNumber];
 }
 
+// Serve download if requested
+if (isset($_GET['download'])) {
+    $filename = basename($_GET['download']);
+    $filepath = __DIR__ . '/' . $filename;
+
+    if (!file_exists($filepath)) {
+        http_response_code(404);
+        echo "File not found.";
+        exit;
+    }
+
+    header('Content-Type: text/plain');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Content-Length: ' . filesize($filepath));
+    readfile($filepath);
+    exit;
+}
+
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     $url = trim($_POST['url']);
@@ -67,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 
     echo "<h2>✅ LIN Converted</h2>";
     echo "<p><strong>Handviewer:</strong> <a href='$viewerUrl' target='_blank'>$viewerUrl</a></p>";
-    echo "<p><a href='download.php?file=$filename'>📥 Download LIN File</a></p>";
+    echo "<p><a href='?download=$filename'>📥 Download LIN File</a></p>";
     echo "<pre style='white-space:pre-wrap;background:#f0f0f0;padding:1em;border-radius:5px;'>$normalized</pre>";
     echo "<p><a href=''>🔁 Convert another</a></p>";
     exit;
