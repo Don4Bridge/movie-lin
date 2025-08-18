@@ -37,7 +37,7 @@ function normalize_lin($lin) {
         }
     }
 
-    return implode('|', $ordered);
+    return implode('|', $ordered) . '|'; // Append closing pipe
 }
 
 // Handle form submission
