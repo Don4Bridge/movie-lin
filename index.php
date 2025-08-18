@@ -40,17 +40,8 @@ function lin_to_pbn($lin) {
     }
 
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
-
-    // Validate dealer
-    $validDealers = ['N', 'E', 'S', 'W'];
-    $dealer = 'N';
-    if (isset($tags['rh']) && strlen($tags['rh'][0]) > 0) {
-        $candidate = strtoupper($tags['rh'][0][0]);
-        if (in_array($candidate, $validDealers)) {
-            $dealer = $candidate;
-        }
-    }
-
+    $dealer = isset($tags['rh']) && strlen($tags['rh'][0]) > 0 ? $tags['rh'][0][0] : 'N';
+    $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
     $auction = isset($tags['mb']) ? $tags['mb'] : [];
     $play = isset($tags['pc']) ? $tags['pc'] : [];
 
@@ -63,18 +54,23 @@ function lin_to_pbn($lin) {
     $pbn .= "[East \"{$players[1]}\"]\n";
     $pbn .= "[South \"{$players[2]}\"]\n";
 
-    // Auction with rotation labels
+    // Format auction
     $pbn .= "\nAuction \"$dealer\"\n";
     $rotation = ['N', 'E', 'S', 'W'];
     $startIndex = array_search($dealer, $rotation);
     $currentIndex = $startIndex;
 
-    foreach ($auction as $bid) {
-        $pbn .= $rotation[$currentIndex] . " " . $bid . "\n";
+    foreach ($auction as $i => $bid) {
+        $pbn .= $bid;
         $currentIndex = ($currentIndex + 1) % 4;
+        if (($i + 1) % 4 === 0) {
+            $pbn .= "\n";
+        } else {
+            $pbn .= " ";
+        }
     }
 
-    // Play with rotation labels and trick grouping
+    // Format play
     if (!empty($play)) {
         $pbn .= "\nPlay \"$dealer\"\n";
         $currentIndex = $startIndex;
@@ -155,12 +151,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 </head>
 <body>
     <h1>🎬 Convert BBO Movie to Handviewer</h1>
-   <form method="post">
-    <label for="url"><strong>Paste BBO movie URL:</strong></label><br>
-    <input type="text" id="url" name="url" required
-           placeholder="https://www.bridgebase.com/tools/movie.html?lin=..."
-           style="width: 100%; padding: 0.5em; font-size: 1em; margin-top: 0.5em;"><br>
-    <button type="submit" style="margin-top: 1em;">Convert</button>
+    <form method="post">
+        <label for="url">Paste BBO movie URL:</label><br>
+        <input type="text" name="url" required placeholder="https://www.bridgebase.com/tools/movie.html?lin=..."><br>
+        <button type="submit">Convert</button>
     </form>
 </body>
 </html>
