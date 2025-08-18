@@ -83,21 +83,57 @@ function lin_to_pbn($lin) {
 
     $auction = isset($tags['mb']) ? $tags['mb'] : [];
     $play = isset($tags['pc']) ? $tags['pc'] : [];
-    
+
     $md = isset($tags['md']) ? 'md|' . $tags['md'][0] : '';
     list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
     $dealer = $mdDealer;
 
+    // 🔍 Vulnerability
+    $vulMap = ['o' => 'None', 'b' => 'Both', 'n' => 'NS', 'e' => 'EW'];
+    $vulCode = $tags['sv'][0] ?? 'o';
+    $vul = $vulMap[$vulCode] ?? 'None';
+
+    // 🧠 Contract
+    $lastBid = 'Pass';
+    foreach ($auction as $bid) {
+        if (!in_array($bid, ['p', 'ap'])) {
+            $lastBid = $bid;
+        }
+    }
+
+    // 🧠 Declarer (first to bid final strain)
+    $strain = preg_replace('/[^A-Z]/', '', $lastBid);
+    $declarerIndex = null;
+    foreach ($auction as $i => $bid) {
+        if (strpos($bid, $strain) !== false) {
+            $declarerIndex = $i % 4;
+            break;
+        }
+    }
+    $seatMap = ['N', 'E', 'S', 'W'];
+    $declarer = $seatMap[$declarerIndex] ?? $dealer;
+
+    // 🧪 Result (trick count)
+    $tricks = floor(count($play) / 4);
+    $result = (string)$tricks;
+
+    // 🧾 PBN Header
     $pbn = "[Event \"BBO Tournament\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
+    $pbn .= "[Date \"" . date('Y.m.d') . "\"]\n";
     $pbn .= "[Board \"$boardNum\"]\n";
     $pbn .= "[Dealer \"$dealer\"]\n";
+    $pbn .= "[Vulnerable \"$vul\"]\n";
+    $pbn .= "[Contract \"$lastBid\"]\n";
+    $pbn .= "[Declarer \"$declarer\"]\n";
+    $pbn .= "[Result \"$result\"]\n";
     $pbn .= "[West \"{$players[3]}\"]\n";
     $pbn .= "[North \"{$players[0]}\"]\n";
     $pbn .= "[East \"{$players[1]}\"]\n";
     $pbn .= "[South \"{$players[2]}\"]\n";
     $pbn .= $dealTag . "\n";
 
+    // 🧾 Auction Block
     $pbn .= "\nAuction \"$dealer\"\n";
     $rotation = ['N', 'E', 'S', 'W'];
     $currentIndex = array_search($dealer, $rotation);
@@ -107,6 +143,16 @@ function lin_to_pbn($lin) {
         $pbn .= ($i + 1) % 4 === 0 ? "\n" : " ";
     }
 
+    // 🧾 Play Block
+    $pbn .= "\nPlay \"$declarer\"\n";
+    $currentIndex = array_search($dealer, $rotation);
+    foreach ($play as $i => $card) {
+        $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
+        $currentIndex = ($currentIndex + 1) % 4;
+    }
+
+    return $pbn;
+}
     $pbn .= "\nPlay \"$dealer\"\n";
     $currentIndex = array_search($dealer, $rotation);
     foreach ($play as $i => $card) {
