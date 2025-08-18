@@ -179,7 +179,12 @@ function determineDeclarer(string $dealer, array $auction): string {
        $result = 7; // declarer took all 13 tricks
 
     // 🧾 PBN Header
-    $declarer = determineDeclarer($dealer, $auction);
+    $auctionRaw = $tags['mb'] ?? [];
+    $auction = array_map(function($bid) {
+    return explode('|', $bid)[0];
+    }, $auctionRaw);
+
+$declarer = determineDeclarer($dealer, $auction);
     $rotation = ['N', 'E', 'S', 'W'];
     $pbn = "[Event \"BBO Tournament\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
