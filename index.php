@@ -17,7 +17,7 @@ function normalize_lin_preserving_order($lin) {
         error_log("Parsed tag: $tag | value: $value");
 
         if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $value, $matches)) {
-            $boardNumber = 'board-' . $matches[1];
+            $boardNumber = 'board_' . $matches[1];
             error_log("✅ Board number detected: $boardNumber");
         }
     }
