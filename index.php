@@ -40,7 +40,7 @@ function lin_to_pbn($lin) {
     }
 
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
-    $dealer = isset($tags['rh']) ? $tags['rh'][0][0] : 'N';
+    $dealer = isset($tags['rh']) && strlen($tags['rh'][0]) > 0 ? $tags['rh'][0][0] : 'N';
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
     $auction = isset($tags['mb']) ? $tags['mb'] : [];
     $play = isset($tags['pc']) ? $tags['pc'] : [];
@@ -53,21 +53,34 @@ function lin_to_pbn($lin) {
     $pbn .= "[North \"{$players[0]}\"]\n";
     $pbn .= "[East \"{$players[1]}\"]\n";
     $pbn .= "[South \"{$players[2]}\"]\n";
-    $pbn .= "\nAuction \"$dealer\"\n";
 
-    foreach ($auction as $bid) {
-        $pbn .= $bid . "\n";
+    // Format auction
+    $pbn .= "\nAuction \"$dealer\"\n";
+    $rotation = ['N', 'E', 'S', 'W'];
+    $startIndex = array_search($dealer, $rotation);
+    $currentIndex = $startIndex;
+
+    foreach ($auction as $i => $bid) {
+        $pbn .= $bid;
+        $currentIndex = ($currentIndex + 1) % 4;
+        if (($i + 1) % 4 === 0) {
+            $pbn .= "\n";
+        } else {
+            $pbn .= " ";
+        }
     }
 
+    // Format play
     if (!empty($play)) {
         $pbn .= "\nPlay \"$dealer\"\n";
-        $rotation = ['N', 'E', 'S', 'W'];
-        $startIndex = array_search($dealer, $rotation);
         $currentIndex = $startIndex;
 
-        foreach ($play as $card) {
-            $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
-            $currentIndex = ($currentIndex + 1) % 4;
+        foreach (array_chunk($play, 4) as $trick) {
+            foreach ($trick as $card) {
+                $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
+                $currentIndex = ($currentIndex + 1) % 4;
+            }
+            $currentIndex = $startIndex;
         }
 
         error_log("✅ Parsed " . count($play) . " play cards starting from dealer $dealer");
@@ -139,9 +152,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 <body>
     <h1>🎬 Convert BBO Movie to Handviewer</h1>
     <form method="post">
-        <label for="url">Paste BBO movie URL:</label><br>
-        <input type="text" name="url" required placeholder="https://www.bridgebase.com/tools/movie.html?lin=..."><br>
-        <button type="submit">Convert</button>
-    </form>
-</body>
-</html>
+        <label for="url">Paste BBO movie
