@@ -111,7 +111,7 @@ function lin_to_pbn($lin) {
             $currentIndex = array_search($dealer, $rotation);
         }
     }
-
+    error_log("✅ Final PBN output length: " . strlen($pbn));
     return $pbn;
     return $pbn ?? '';
 }
