@@ -117,8 +117,11 @@ function lin_to_pbn($lin) {
     $declarer = $rotation[$declarerIndex] ?? $dealer;
 
     // ✅ Extract Result from LIN
-    $tricks = floor(count($play) / 4);
-    $result = (string)$tricks;
+    $contractLevel = intval($contractBid[0]); // e.g. 1 for "1NT"
+    $tricksTaken = countDeclarerTricks($playBlock); // returns total tricks won by declarer
+    $result = $tricksTaken - 6; // subtract book
+
+$pbn .= '[Result "' . $result . "\"]\n";
 
     // 🧾 PBN Header
     $pbn = "[Event \"BBO Tournament\"]\n";
