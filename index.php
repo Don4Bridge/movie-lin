@@ -9,6 +9,13 @@ function normalizeLin($lin) {
             : 'pn|North,East,South,West';
     }, $lin);
 
+    // Ensure st| tag is present and non-empty
+    if (strpos($lin, 'st|') !== false) {
+        $lin = preg_replace('/st\|\|/', 'st|Match|', $lin);
+    } else {
+        $lin = 'st|Match|' . $lin;
+    }
+
     // Normalize md| tag
     $lin = preg_replace_callback('/md\|([1-4])([^|]*)/', function($matches) {
         $dealer = $matches[1];
