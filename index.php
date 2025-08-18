@@ -4,7 +4,7 @@ function normalize_lin_preserving_order($lin) {
     $rawPairs = [];
     $boardNumber = 'unknown';
 
-    // Parse into tag-value pairs without skipping anything
+    // Parse all tag-value pairs in order
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
         $value = $parts[$i + 1];
@@ -15,33 +15,14 @@ function normalize_lin_preserving_order($lin) {
         }
     }
 
-    // Inject missing pn, rh, st tags at the top
-    $fallbacks = [
-        'pn' => 'North,East,South,West',
-        'rh' => 'N,E,S,W',
-        'st' => 'BBO Tournament'
-    ];
-
-    $existingTags = array_column($rawPairs, 0);
-    $tagsToInject = [];
-
-    foreach ($fallbacks as $tag => $defaultValue) {
-        if (!in_array($tag, $existingTags)) {
-            $tagsToInject[] = [$tag, $defaultValue];
-        }
-    }
-
-    // Combine injected tags + original pairs (preserving original order)
-    $finalPairs = array_merge($tagsToInject, $rawPairs);
-
-    // Rebuild LIN string
+    // Rebuild LIN string exactly as authored
     $normalized = '';
-    foreach ($finalPairs as [$tag, $value]) {
+    foreach ($rawPairs as [$tag, $value]) {
         $normalized .= $tag . '|' . $value . '|';
     }
 
     return [$normalized, $boardNumber];
-}
+}}
 // Serve download if requested
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
