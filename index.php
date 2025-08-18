@@ -170,7 +170,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     if (!isset($query['lin'])) {
         echo "<p>❌ Invalid BBO movie URL. LIN string not found.</p>";
         echo "<p><a href=''>🔁 Try again</a></p>";
-        exit;
     }
 
     $rawLin = $query['lin'];
