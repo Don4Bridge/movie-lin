@@ -31,25 +31,40 @@ function normalize_lin_preserving_order($lin) {
 
     return [$normalized, $boardNumber];
 }
-function parse_md_to_pbn_deal($md) {
+function parse_md_to_pbn_deal($mdLine) {
     $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
     $rotation = ['S', 'W', 'N', 'E'];
 
-    $segments = explode('|', $md);
-    $dealerCode = substr($segments[0], 0, 1);
+    // Extract dealer and hands from md| line
+    if (strpos($mdLine, 'md|') !== 0) {
+        error_log("❌ md line does not start with 'md|'");
+        return ['N', '[Deal "N:S. H. D. C."]'];
+    }
+
+    $mdContent = substr($mdLine, 3); // Remove 'md|'
+    $dealerCode = substr($mdContent, 0, 1); // First character is dealer code
     $dealer = $dealerMap[$dealerCode] ?? 'N';
 
-    $hands = array_slice($segments, 1);
+    $handString = substr($mdContent, 1); // Remaining string is hands
+    $rawHands = explode(',', $handString);
+    if (count($rawHands) !== 4) {
+        error_log("❌ Expected 4 hands, got " . count($rawHands));
+        return [$dealer, '[Deal "' . $dealer . ':S. H. D. C."]'];
+    }
+
+    // LIN rotation: South, West, North, East
+    $seatOrder = ['S', 'W', 'N', 'E'];
     $dealParts = [];
 
-    foreach ($hands as $i => $hand) {
+    foreach ($seatOrder as $i => $seat) {
+        $hand = $rawHands[$i];
         $suitMap = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
         preg_match_all('/([SHDC])([^SHDC]*)/', $hand, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $suitMap[$match[1]] = $match[2];
         }
         $formatted = "S{$suitMap['S']}.H{$suitMap['H']}.D{$suitMap['D']}.C{$suitMap['C']}";
-        $dealParts[] = $rotation[$i] . ":" . $formatted;
+        $dealParts[] = "$seat.$formatted";
     }
 
     return [$dealer, '[Deal "' . $dealer . ':' . implode(' ', $dealParts) . '"]'];
