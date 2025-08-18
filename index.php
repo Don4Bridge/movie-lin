@@ -31,7 +31,29 @@ function normalize_lin_preserving_order($lin) {
 
     return [$normalized, $boardNumber];
 }
+function parse_md_to_pbn_deal($md) {
+    $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
+    $rotation = ['S', 'W', 'N', 'E'];
 
+    $segments = explode('|', $md);
+    $dealerCode = substr($segments[0], 0, 1);
+    $dealer = $dealerMap[$dealerCode] ?? 'N';
+
+    $hands = array_slice($segments, 1);
+    $dealParts = [];
+
+    foreach ($hands as $i => $hand) {
+        $suitMap = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+        preg_match_all('/([SHDC])([^SHDC]*)/', $hand, $matches, PREG_SET_ORDER);
+        foreach ($matches as $match) {
+            $suitMap[$match[1]] = $match[2];
+        }
+        $formatted = "S{$suitMap['S']}.H{$suitMap['H']}.D{$suitMap['D']}.C{$suitMap['C']}";
+        $dealParts[] = $rotation[$i] . ":" . $formatted;
+    }
+
+    return [$dealer, '[Deal "' . $dealer . ':' . implode(' ', $dealParts) . '"]'];
+}
 function lin_to_pbn($lin) {
     $parts = explode('|', $lin);
     $tags = [];
@@ -42,48 +64,50 @@ function lin_to_pbn($lin) {
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
     $dealer = isset($tags['rh']) && strlen($tags['rh'][0]) > 0 ? $tags['rh'][0][0] : 'N';
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
+    preg_match('/Board\s+(\d+)/i', $boardTitle, $matches);
+    $boardNum = isset($matches[1]) ? $matches[1] : '1';
+
     $auction = isset($tags['mb']) ? $tags['mb'] : [];
     $play = isset($tags['pc']) ? $tags['pc'] : [];
+    $md = isset($tags['md']) ? 'md|' . $tags['md'][0] : '';
 
     $pbn = "[Event \"BBO Tournament\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
-    $pbn .= "[Board \"1\"]\n";
+    $pbn .= "[Board \"$boardNum\"]\n";
     $pbn .= "[Dealer \"$dealer\"]\n";
     $pbn .= "[West \"{$players[3]}\"]\n";
     $pbn .= "[North \"{$players[0]}\"]\n";
     $pbn .= "[East \"{$players[1]}\"]\n";
     $pbn .= "[South \"{$players[2]}\"]\n";
 
-    // Format auction
+    if ($md) {
+        list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
+        $pbn .= $dealTag . "\n";
+    }
+
+    // Auction
     $pbn .= "\nAuction \"$dealer\"\n";
     $rotation = ['N', 'E', 'S', 'W'];
-    $startIndex = array_search($dealer, $rotation);
-    $currentIndex = $startIndex;
+    $currentIndex = array_search($dealer, $rotation);
 
     foreach ($auction as $i => $bid) {
         $pbn .= $bid;
         $currentIndex = ($currentIndex + 1) % 4;
-        if (($i + 1) % 4 === 0) {
-            $pbn .= "\n";
-        } else {
-            $pbn .= " ";
-        }
+        $pbn .= ($i + 1) % 4 === 0 ? "\n" : " ";
     }
 
-    // Format play
+    // Play
     if (!empty($play)) {
         $pbn .= "\nPlay \"$dealer\"\n";
-        $currentIndex = $startIndex;
+        $currentIndex = array_search($dealer, $rotation);
 
         foreach (array_chunk($play, 4) as $trick) {
             foreach ($trick as $card) {
                 $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
                 $currentIndex = ($currentIndex + 1) % 4;
             }
-            $currentIndex = $startIndex;
+            $currentIndex = array_search($dealer, $rotation);
         }
-
-        error_log("✅ Parsed " . count($play) . " play cards starting from dealer $dealer");
     }
 
     return $pbn;
