@@ -80,6 +80,7 @@ function lin_to_pbn($lin) {
 }
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
     list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
+    list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
     $dealer = $mdDealer;
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
     preg_match('/Board\s+(\d+)/i', $boardTitle, $matches);
