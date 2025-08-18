@@ -1,7 +1,9 @@
 <?php
-function normalize_lin($lin) {
+function normalize_lin_with_board($lin) {
     $parts = explode('|', $lin);
     $tagMap = [];
+    $boardNumber = 'unknown';
+
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
         $value = $parts[$i + 1];
@@ -9,6 +11,10 @@ function normalize_lin($lin) {
             $tagMap[$tag] = [];
         }
         $tagMap[$tag][] = $value;
+
+        if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $value, $matches)) {
+            $boardNumber = 'board-' . $matches[1];
+        }
     }
 
     $fallbacks = [
@@ -37,7 +43,7 @@ function normalize_lin($lin) {
         }
     }
 
-    return implode('|', $ordered) . '|'; // Append closing pipe
+    return [implode('|', $ordered) . '|', $boardNumber];
 }
 
 // Handle form submission
@@ -53,15 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     }
 
     $rawLin = $query['lin'];
-    $normalized = normalize_lin($rawLin);
-    $filename = 'converted.lin';
+    list($normalized, $boardNumber) = normalize_lin_with_board($rawLin);
+    $filename = $boardNumber . '.lin';
     file_put_contents($filename, $normalized);
 
     $viewerUrl = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalized);
 
     echo "<h2>✅ LIN Converted</h2>";
     echo "<p><strong>Handviewer:</strong> <a href='$viewerUrl' target='_blank'>$viewerUrl</a></p>";
-    echo "<p><a href='$filename' download>📥 Download LIN File</a></p>";
+    echo "<p><a href='download.php?file=$filename'>📥 Download LIN File</a></p>";
     echo "<pre style='white-space:pre-wrap;background:#f0f0f0;padding:1em;border-radius:5px;'>$normalized</pre>";
     echo "<p><a href=''>🔁 Convert another</a></p>";
     exit;
