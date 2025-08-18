@@ -105,18 +105,36 @@ function lin_to_pbn($lin) {
     $lastBid = preg_replace('/^(\d)N$/', '$1NT', $lastBid);
 
     // ✅ Extract Declarer from LIN
-    $strain = preg_replace('/[^A-Z]/', '', $lastBid);
-    $rotation = ['N', 'E', 'S', 'W'];
-    $startIndex = array_search($dealer, $rotation);
-    $declarerIndex = null;
-    foreach ($auction as $i => $bid) {
-        if (strpos($bid, $strain) !== false) {
-            $declarerIndex = ($startIndex + $i) % 4;
+   $rotation = ['N', 'E', 'S', 'W'];
+$startIndex = array_search($dealer, $rotation); // dealer is first bidder
+
+// Extract strain from last bid
+preg_match('/[1-7](NT|[SHDC])/', $lastBid, $matches);
+$strain = $matches[1] ?? null;
+
+// Determine final bidder's seat
+$finalBidIndex = count($auction) - 1;
+while ($finalBidIndex >= 0 && !preg_match('/[1-7]' . preg_quote($strain, '/') . '/', explode('|', $auction[$finalBidIndex])[0])) {
+    $finalBidIndex--;
+}
+$finalBidderIndex = ($startIndex + $finalBidIndex) % 4;
+$finalBidderSeat = $rotation[$finalBidderIndex];
+
+// Determine partnership
+$partnership = in_array($finalBidderSeat, ['N', 'S']) ? ['N', 'S'] : ['E', 'W'];
+
+// Find first player from partnership who bid the strain
+$declarer = $finalBidderSeat; // fallback
+foreach ($auction as $i => $bid) {
+    $cleanBid = explode('|', $bid)[0];
+    if (preg_match('/[1-7]' . preg_quote($strain, '/') . '/', $cleanBid)) {
+        $seat = $rotation[($startIndex + $i) % 4];
+        if (in_array($seat, $partnership)) {
+            $declarer = $seat;
             break;
         }
     }
-    $declarer = $rotation[$declarerIndex] ?? $dealer;
-
+}
        $result = 7; // declarer took all 13 tricks
 
     // 🧾 PBN Header
