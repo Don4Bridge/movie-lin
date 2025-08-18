@@ -115,7 +115,7 @@ function lin_to_pbn($lin) {
     }
 
     return $pbn;
-
+}
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
     $filepath = __DIR__ . '/' . $filename;
