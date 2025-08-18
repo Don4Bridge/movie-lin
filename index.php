@@ -1,31 +1,29 @@
 <?php
 
 function normalizeLin($lin) {
-    // Preserve pn| if it has 4 names, else fallback
-    $lin = preg_replace_callback('/pn\|([^|]+)/', function($matches) {
-        $names = explode(',', $matches[1]);
-        return count($names) === 4
-            ? 'pn|' . implode(',', $names)
-            : 'pn|North,East,South,West';
-    }, $lin);
+    // Ensure pn| is present and valid
+    if (!preg_match('/pn\|([^|]+)/', $lin)) {
+        $lin = 'pn|North,East,South,West|' . $lin;
+    }
 
-    // Ensure st| tag is present and non-empty
+    // Ensure st| is present and non-empty
     if (strpos($lin, 'st|') !== false) {
         $lin = preg_replace('/st\|\|/', 'st|BBO Tournament|', $lin);
     } else {
-        $lin = 'st|BBO Tournament|' . $lin;
+        $lin = preg_replace('/pn\|([^|]+)\|/', 'pn|$1|st|BBO Tournament|', $lin);
     }
 
-    // Ensure rh| tag is present
-    if (strpos($lin, 'rh|') === false) {
-        $lin .= '|rh|N,E,S,W|';
+    // Ensure rh| is present and valid
+    if (strpos($lin, 'rh|') !== false) {
+        $lin = preg_replace('/rh\|\|/', 'rh|N,E,S,W|', $lin);
+    } else {
+        $lin = preg_replace('/st\|[^|]+\|/', '$0rh|N,E,S,W|', $lin);
     }
 
     // Normalize md| tag
     $lin = preg_replace_callback('/md\|([1-4])([^|]*)/', function($matches) {
         $dealer = $matches[1];
         $hands = explode(',', $matches[2]);
-
         $fixedHands = array_map(function($hand) {
             preg_match_all('/([SHDC])([^SHDC]*)/', $hand, $parts, PREG_SET_ORDER);
             $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
@@ -34,7 +32,6 @@ function normalizeLin($lin) {
             }
             return 'S' . $suits['S'] . 'H' . $suits['H'] . 'D' . $suits['D'] . 'C' . $suits['C'];
         }, $hands);
-
         return 'md|' . $dealer . implode(',', $fixedHands);
     }, $lin);
 
