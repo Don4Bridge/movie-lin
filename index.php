@@ -126,36 +126,55 @@ function mapAuctionSeats(string $dealerSeat, array $auction): array {
     $lastBid = $contractBid ?? 'Pass';
     $lastBid = preg_replace('/^(\d)N$/', '$1NT', $lastBid);
 
-    // ✅ Extract Declarer from LIN
-   $rotation = ['N', 'E', 'S', 'W'];
-$startIndex = array_search($dealer, $rotation); // dealer is first bidder
+   /**
+ * Determines the declarer seat from dealer, auction, and final contract strain.
+ *
+ * @param string $dealer One of 'N', 'E', 'S', 'W'
+ * @param array $auction Array of mb| bids (e.g. ['1N', '2C', 'P', '2D', ...])
+ * @return string Declarer seat ('N', 'E', 'S', 'W')
+ */
+function determineDeclarer(string $dealer, array $auction): string {
+    $rotation = ['N', 'E', 'S', 'W'];
+    $startIndex = array_search($dealer, $rotation);
+    if ($startIndex === false) {
+        error_log("❌ Invalid dealer seat: $dealer");
+        return 'N'; // fallback
+    }
 
-// Extract strain from last bid
-preg_match('/[1-7](NT|[SHDC])/', $lastBid, $matches);
-$strain = $matches[1] ?? null;
-
-// Determine final bidder's seat
-$finalBidIndex = count($auction) - 1;
-while ($finalBidIndex >= 0 && !preg_match('/[1-7]' . preg_quote($strain, '/') . '/', explode('|', $auction[$finalBidIndex])[0])) {
-    $finalBidIndex--;
-}
-$finalBidderIndex = ($startIndex + $finalBidIndex) % 4;
-$finalBidderSeat = $rotation[$finalBidderIndex];
-
-// Determine partnership
-$partnership = in_array($finalBidderSeat, ['N', 'S']) ? ['N', 'S'] : ['E', 'W'];
-
-// Find first player from partnership who bid the strain
-$declarer = $finalBidderSeat; // fallback
-foreach ($auction as $i => $bid) {
-    $cleanBid = explode('|', $bid)[0];
-    if (preg_match('/[1-7]' . preg_quote($strain, '/') . '/', $cleanBid)) {
-        $seat = $rotation[($startIndex + $i) % 4];
-        if (in_array($seat, $partnership)) {
-            $declarer = $seat;
+    // Extract final contract bid
+    $finalBidIndex = -1;
+    $strain = null;
+    for ($i = count($auction) - 1; $i >= 0; $i--) {
+        $bid = explode('|', $auction[$i])[0];
+        if (preg_match('/[1-7](NT|[SHDC])/', $bid, $matches)) {
+            $finalBidIndex = $i;
+            $strain = $matches[1];
             break;
         }
     }
+
+    if ($finalBidIndex === -1 || !$strain) {
+        error_log("❌ No valid contract bid found.");
+        return 'N'; // fallback
+    }
+
+    $finalBidderIndex = ($startIndex + $finalBidIndex) % 4;
+    $finalBidderSeat = $rotation[$finalBidderIndex];
+    $partnership = in_array($finalBidderSeat, ['N', 'S']) ? ['N', 'S'] : ['E', 'W'];
+
+    // Find first strain bid by partnership
+    for ($i = 0; $i < count($auction); $i++) {
+        $bid = explode('|', $auction[$i])[0];
+        if (preg_match('/[1-7]' . preg_quote($strain, '/') . '/', $bid)) {
+            $seatIndex = ($startIndex + $i) % 4;
+            $seat = $rotation[$seatIndex];
+            if (in_array($seat, $partnership)) {
+                return $seat;
+            }
+        }
+    }
+
+    return $finalBidderSeat; // fallback
 }
        $result = 7; // declarer took all 13 tricks
 
