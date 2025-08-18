@@ -147,12 +147,19 @@ $pbn .= '[Result "' . $result . "\"]\n";
     }
 
     // 🧾 Play Block
-    $pbn .= "\nPlay \"$declarer\"\n";
-    $currentIndex = array_search($dealer, $rotation);
-    foreach ($play as $i => $card) {
-        $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
-        $currentIndex = ($currentIndex + 1) % 4;
+$pbn .= "\nPlay \"$declarer\"\n";
+$playRotation = ['N', 'E', 'S', 'W'];
+$leadIndex = (array_search($dealer, $playRotation) + 1) % 4;
+
+for ($i = 0; $i < count($play); $i += 4) {
+    for ($j = 0; $j < 4; $j++) {
+        $seat = $playRotation[($leadIndex + $j) % 4];
+        $card = $play[$i + $j] ?? '';
+        if ($card !== '') {
+            $pbn .= "$seat $card\n";
+        }
     }
+}
 
     return $pbn;
 }
