@@ -1,89 +1,49 @@
 <?php
-function normalize_lin($lin) {
+function patchLinAfterLastCard($lin) {
     $parts = explode('|', $lin);
-    $tagMap = [];
+    $patchedParts = [];
+    $lastPcIndex = -1;
+
+    // Track positions of pc| tags
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
-        $tag = $parts[$i];
-        $value = $parts[$i + 1];
-        if (!isset($tagMap[$tag])) {
-            $tagMap[$tag] = [];
-        }
-        $tagMap[$tag][] = $value;
-    }
-
-    $fallbacks = [
-        'pn' => ['North,East,South,West'],
-        'rh' => ['N,E,S,W'],
-        'st' => ['BBO Tournament']
-    ];
-
-    foreach (['pn', 'rh', 'st'] as $tag) {
-        if (!isset($tagMap[$tag]) || !array_filter($tagMap[$tag])) {
-            $tagMap[$tag] = $fallbacks[$tag];
+        $patchedParts[] = $parts[$i];
+        $patchedParts[] = $parts[$i + 1];
+        if ($parts[$i] === 'pc') {
+            $lastPcIndex = $i;
         }
     }
 
-    $ordered = [];
-    foreach (['pn', 'rh', 'st'] as $tag) {
-        foreach ($tagMap[$tag] as $value) {
-            $ordered[] = $tag . '|' . $value;
-        }
-        unset($tagMap[$tag]);
+    // If no pc| found, return original
+    if ($lastPcIndex === -1) {
+        echo "No pc| tags found.\n";
+        return $lin;
     }
 
-    foreach ($tagMap as $tag => $values) {
-        foreach ($values as $value) {
-            $ordered[] = $tag . '|' . $value;
-        }
+    // Remove anything after last pc| tag
+    $endIndex = $lastPcIndex + 2;
+    $patchedParts = array_slice($patchedParts, 0, $endIndex);
+
+    // Append pg| and mc| if not already present
+    $endingTags = array_slice($parts, $endIndex);
+    $hasPg = in_array('pg', $endingTags);
+    $hasMc = in_array('mc', $endingTags);
+
+    if (!$hasPg) {
+        $patchedParts[] = 'pg';
+        $patchedParts[] = '';
+    }
+    if (!$hasMc) {
+        $patchedParts[] = 'mc';
+        $patchedParts[] = '';
     }
 
-    return implode('|', $ordered);
+    // Rebuild LIN string
+    $patchedLin = implode('|', $patchedParts);
+    return $patchedLin;
 }
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
-    $url = trim($_POST['url']);
-    $parsed = parse_url($url);
-    parse_str($parsed['query'] ?? '', $query);
+// Example usage
+$rawLin = 'pn|N,S,E,W|md|1SKQJHKTDC9876,SA987H5432DQT5C4,S5432H987D32C32,S6H6DAKJACAKQJ|mb|1S|mb|2S|mb|3S|mb|ap|pc|C4|pc|C2|pc|C3|pc|C6|pc|D5|pc|D2|pc|D3|pc|D6|pc|H2|pc|H3|pc|H4|pc|H5|pc|S2|pc|S3|pc|S4|pc|S5|pc|C5|pc|C7|pc|C8|pc|C9|pc|D7|pc|D8|pc|D9|pc|DT|pc|H6|pc|H7|pc|H8|pc|H9|pc|S6|pc|S7|pc|S8|pc|S9|pc|CA|pc|CK|pc|CQ|pc|CJ|pc|DA|pc|DK|pc|DQ|pc|DJ|pc|HA|pc|HK|pc|HQ|pc|HJ|pc|SA|pc|SK|pc|SQ|pc|SJ';
 
-    if (!isset($query['lin'])) {
-        echo "<p>❌ Invalid BBO movie URL. LIN string not found.</p>";
-        echo "<p><a href=''>🔁 Try again</a></p>";
-        exit;
-    }
-
-    $rawLin = $query['lin'];
-    $normalized = normalize_lin($rawLin);
-    $filename = 'converted.lin';
-    file_put_contents($filename, $normalized);
-
-    $viewerUrl = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalized);
-
-    echo "<h2>✅ LIN Converted</h2>";
-    echo "<p><strong>Handviewer:</strong> <a href='$viewerUrl' target='_blank'>$viewerUrl</a></p>";
-    echo "<p><a href='$filename' download>📥 Download LIN File</a></p>";
-    echo "<pre style='white-space:pre-wrap;background:#f0f0f0;padding:1em;border-radius:5px;'>$normalized</pre>";
-    echo "<p><a href=''>🔁 Convert another</a></p>";
-    exit;
-}
-?>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>BBO Movie → Handviewer</title>
-    <style>
-        body { font-family: sans-serif; padding: 2em; max-width: 700px; margin: auto; }
-        input[type="text"] { width: 100%; padding: 0.5em; font-size: 1em; }
-        button { padding: 0.5em 1em; font-size: 1em; margin-top: 1em; }
-    </style>
-</head>
-<body>
-    <h1>🎬 Convert BBO Movie to Handviewer</h1>
-    <form method="post">
-        <label for="url">Paste BBO movie URL:</label><br>
-        <input type="text" name="url" required placeholder="https://www.bridgebase.com/tools/movie.html?lin=..."><br>
-        <button type="submit">Convert</button>
-    </form>
-</body>
-</html>
+$patchedLin = patchLinAfterLastCard($rawLin);
+echo "Patched LIN:\n$patchedLin\n";
