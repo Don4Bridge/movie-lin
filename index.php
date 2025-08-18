@@ -1,49 +1,46 @@
 <?php
-function normalize_lin_with_board($lin) {
+function normalize_lin_preserving_explanations($lin) {
     $parts = explode('|', $lin);
-    $tagMap = [];
+    $rawPairs = [];
     $boardNumber = 'unknown';
 
+    // Parse into tag-value pairs
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
         $value = $parts[$i + 1];
-        if (!isset($tagMap[$tag])) {
-            $tagMap[$tag] = [];
-        }
-        $tagMap[$tag][] = $value;
+        $rawPairs[] = [$tag, $value];
 
         if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $value, $matches)) {
             $boardNumber = 'board-' . $matches[1];
         }
     }
 
+    // Inject missing pn, rh, st tags at the top
     $fallbacks = [
-        'pn' => ['North,East,South,West'],
-        'rh' => ['N,E,S,W'],
-        'st' => ['BBO Tournament']
+        'pn' => 'North,East,South,West',
+        'rh' => 'N,E,S,W',
+        'st' => 'BBO Tournament'
     ];
 
-    foreach (['pn', 'rh', 'st'] as $tag) {
-        if (!isset($tagMap[$tag]) || !array_filter($tagMap[$tag])) {
-            $tagMap[$tag] = $fallbacks[$tag];
+    $existingTags = array_column($rawPairs, 0);
+    $tagsToInject = [];
+
+    foreach ($fallbacks as $tag => $defaultValue) {
+        if (!in_array($tag, $existingTags)) {
+            $tagsToInject[] = [$tag, $defaultValue];
         }
     }
 
-    $ordered = [];
-    foreach (['pn', 'rh', 'st'] as $tag) {
-        foreach ($tagMap[$tag] as $value) {
-            $ordered[] = $tag . '|' . $value;
-        }
-        unset($tagMap[$tag]);
+    // Combine injected tags + original pairs
+    $finalPairs = array_merge($tagsToInject, $rawPairs);
+
+    // Rebuild LIN string
+    $normalized = '';
+    foreach ($finalPairs as [$tag, $value]) {
+        $normalized .= $tag . '|' . $value . '|';
     }
 
-    foreach ($tagMap as $tag => $values) {
-        foreach ($values as $value) {
-            $ordered[] = $tag . '|' . $value;
-        }
-    }
-
-    return [implode('|', $ordered) . '|', $boardNumber];
+    return [$normalized, $boardNumber];
 }
 
 // Serve download if requested
@@ -77,14 +74,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     }
 
     $rawLin = $query['lin'];
-    list($normalized, $boardNumber) = normalize_lin_with_board($rawLin);
+    list($normalized, $boardNumber) = normalize_lin_preserving_explanations($rawLin);
     $filename = $boardNumber . '.lin';
     file_put_contents($filename, $normalized);
 
     $viewerUrl = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalized);
 
     echo "<h2>✅ LIN Converted</h2>";
-    echo "<p><strong>Handviewer:</strong> <a href='$viewerUrl' target='_blank'>$viewerUrl</a></p>";
+    echo "<p><strong>Handviewer:</strong> <a href='$viewerUrl' target='_blank'>🔗 Handviewer Link</a></p>";
     echo "<p><a href='?download=$filename'>📥 Download LIN File</a></p>";
     echo "<pre style='white-space:pre-wrap;background:#f0f0f0;padding:1em;border-radius:5px;'>$normalized</pre>";
     echo "<p><a href=''>🔁 Convert another</a></p>";
