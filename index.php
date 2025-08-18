@@ -50,8 +50,10 @@
         }
 
         // Ensure pn| is present and first
-        if (!isset($tagMap['pn'])) {
-            $tagMap['pn'] = ['North,East,South,West'];
+        if (!isset($tagMap['pn']) || empty($tagMap['pn'][0])) {
+        $tagMap['pn'] = ['North,East,South,West'];
+        }
+
         }
 
         // Ensure rh| is present
