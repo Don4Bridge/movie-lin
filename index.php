@@ -60,7 +60,9 @@ function lin_to_pbn($lin) {
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tags[$parts[$i]][] = $parts[$i + 1];
     }
-
+    if (!isset($tags['md'])) {
+    error_log("❌ No md| tag found in LIN.");
+}
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
     $dealer = isset($tags['rh']) && strlen($tags['rh'][0]) > 0 ? $tags['rh'][0][0] : 'N';
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
@@ -112,6 +114,8 @@ function lin_to_pbn($lin) {
 
     return $pbn;
 }
+error_log("✅ PBN text preview:\n" . substr($pbnText, 0, 300));
+error_log("✅ Writing to file: $pbnFilename");
 
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
