@@ -125,7 +125,7 @@ function mapAuctionSeats(string $dealerSeat, array $auction): array {
     }
     $lastBid = $contractBid ?? 'Pass';
     $lastBid = preg_replace('/^(\d)N$/', '$1NT', $lastBid);
-
+    error_log("🧪 Auction passed to determineDeclarer: " . json_encode($auction));
    /**
  * Determines the declarer seat from dealer, auction, and final contract strain.
  *
@@ -133,6 +133,7 @@ function mapAuctionSeats(string $dealerSeat, array $auction): array {
  * @param array $auction Array of mb| bids (e.g. ['1N', '2C', 'P', '2D', ...])
  * @return string Declarer seat ('N', 'E', 'S', 'W')
  */
+    
 function determineDeclarer(string $dealer, array $auction): string {
     $rotation = ['N', 'E', 'S', 'W'];
     $startIndex = array_search($dealer, $rotation);
@@ -140,6 +141,12 @@ function determineDeclarer(string $dealer, array $auction): string {
         error_log("❌ Invalid dealer seat: $dealer");
         return 'N'; // fallback
     }
+    $auctionRaw = $tags['mb'] ?? [];
+    $auction = array_map(function($bid) {
+    return str_starts_with($bid, 'mb|') ? substr($bid, 3) : $bid;
+    }, $auctionRaw);
+
+$declarer = determineDeclarer($dealer, $auction);
 
     // Extract final contract bid
     $finalBidIndex = -1;
