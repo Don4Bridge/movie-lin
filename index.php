@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>LIN Converter</title>
+    <title>Bridge LIN Converter</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        textarea { width: 100%; height: 200px; }
-        pre { background: #f4f4f4; padding: 10px; border: 1px solid #ccc; }
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        textarea { width: 100%; height: 200px; font-family: monospace; }
+        pre { background: #f4f4f4; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap; word-wrap: break-word; }
+        input[type="submit"] { padding: 10px 20px; font-size: 16px; }
+        a { font-weight: bold; color: #0066cc; }
     </style>
 </head>
 <body>
@@ -17,9 +19,18 @@
 
     <?php
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lin'])) {
-        $lin = $_POST['lin'];
+        $lin = urldecode($_POST['lin']); // Decode URL-encoded input if needed
+
+        echo "<h3>🔍 Raw Input:</h3><pre>" . htmlspecialchars($lin) . "</pre>";
+
         $converted = extractValidLin($lin);
-        echo "<h3>Converted LIN:</h3><pre>" . htmlspecialchars($converted) . "</pre>";
+
+        echo "<h3>✅ Converted LIN:</h3><pre>" . htmlspecialchars($converted) . "</pre>";
+
+        $encoded = urlencode($converted);
+        $viewerUrl = "https://www.bridgebase.com/tools/handviewer.html?lin=" . $encoded;
+
+        echo "<h3>🔗 Handviewer Link:</h3><p><a href=\"$viewerUrl\" target=\"_blank\">View in BBO Handviewer</a></p>";
     }
 
     function extractValidLin($lin) {
@@ -38,16 +49,22 @@
             }
         }
 
+        // Ensure pn| is present and first
         if (!isset($tagMap['pn'])) {
             $tagMap['pn'] = ['North,East,South,West'];
         }
+
+        // Ensure rh| is present
         if (!isset($tagMap['rh'])) {
             $tagMap['rh'] = ['N,E,S,W'];
         }
+
+        // Ensure st| is present
         if (!isset($tagMap['st'])) {
             $tagMap['st'] = ['BBO Tournament'];
         }
 
+        // Build ordered output
         $ordered = [];
         foreach (['pn', 'rh', 'st'] as $tag) {
             foreach ($tagMap[$tag] as $value) {
