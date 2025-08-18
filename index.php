@@ -40,8 +40,17 @@ function lin_to_pbn($lin) {
     }
 
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
-    $dealer = isset($tags['rh']) && strlen($tags['rh'][0]) > 0 ? $tags['rh'][0][0] : 'N';
-    $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
+
+    // Validate dealer
+    $validDealers = ['N', 'E', 'S', 'W'];
+    $dealer = 'N';
+    if (isset($tags['rh']) && strlen($tags['rh'][0]) > 0) {
+        $candidate = strtoupper($tags['rh'][0][0]);
+        if (in_array($candidate, $validDealers)) {
+            $dealer = $candidate;
+        }
+    }
+
     $auction = isset($tags['mb']) ? $tags['mb'] : [];
     $play = isset($tags['pc']) ? $tags['pc'] : [];
 
@@ -54,23 +63,18 @@ function lin_to_pbn($lin) {
     $pbn .= "[East \"{$players[1]}\"]\n";
     $pbn .= "[South \"{$players[2]}\"]\n";
 
-    // Format auction
+    // Auction with rotation labels
     $pbn .= "\nAuction \"$dealer\"\n";
     $rotation = ['N', 'E', 'S', 'W'];
     $startIndex = array_search($dealer, $rotation);
     $currentIndex = $startIndex;
 
-    foreach ($auction as $i => $bid) {
-        $pbn .= $bid;
+    foreach ($auction as $bid) {
+        $pbn .= $rotation[$currentIndex] . " " . $bid . "\n";
         $currentIndex = ($currentIndex + 1) % 4;
-        if (($i + 1) % 4 === 0) {
-            $pbn .= "\n";
-        } else {
-            $pbn .= " ";
-        }
     }
 
-    // Format play
+    // Play with rotation labels and trick grouping
     if (!empty($play)) {
         $pbn .= "\nPlay \"$dealer\"\n";
         $currentIndex = $startIndex;
@@ -152,4 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 <body>
     <h1>🎬 Convert BBO Movie to Handviewer</h1>
     <form method="post">
-        <label for="url">Paste BBO movie
+        <label for="url">Paste BBO movie URL:</label><br>
+        <input type="text" name="url" required placeholder="https://www.bridgebase.com/tools/movie.html?lin=..."><br>
+        <button type="submit">Convert</button>
+    </form>
+</body>
+</html>
