@@ -43,7 +43,6 @@ function normalizeLin($lin) {
 }
 
 function extractValidLin($lin) {
-    // Enforce correct tag order for Handviewer compatibility
     $validTags = ['pn', 'st', 'rh', 'md', 'sv', 'ah', 'an', 'mb', 'pc', 'pg', 'mc', 'qx', 'nt', 'px'];
     $parts = explode('|', $lin);
     $tagMap = [];
@@ -59,7 +58,18 @@ function extractValidLin($lin) {
         }
     }
 
+    // Force pn, st, rh to be first
     $ordered = [];
+    foreach (['pn', 'st', 'rh'] as $tag) {
+        if (isset($tagMap[$tag])) {
+            foreach ($tagMap[$tag] as $value) {
+                $ordered[] = $tag . '|' . $value;
+            }
+            unset($tagMap[$tag]);
+        }
+    }
+
+    // Add remaining tags
     foreach ($validTags as $tag) {
         if (isset($tagMap[$tag])) {
             foreach ($tagMap[$tag] as $value) {
