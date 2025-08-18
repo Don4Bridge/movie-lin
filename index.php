@@ -143,16 +143,7 @@ function lin_to_pbn($lin) {
         $pbn .= ($i + 1) % 4 === 0 ? "\n" : " ";
     }
 
-    // 🧾 Play Block
-    $pbn .= "\nPlay \"$declarer\"\n";
-    $currentIndex = array_search($dealer, $rotation);
-    foreach ($play as $i => $card) {
-        $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
-        $currentIndex = ($currentIndex + 1) % 4;
-    }
-
-    return $pbn;
-}
+    } 
     $pbn .= "\nPlay \"$dealer\"\n";
     $currentIndex = array_search($dealer, $rotation);
     foreach ($play as $i => $card) {
