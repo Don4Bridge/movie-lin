@@ -143,15 +143,7 @@ function lin_to_pbn($lin) {
         $pbn .= ($i + 1) % 4 === 0 ? "\n" : " ";
     }
 
-    } 
-    $pbn .= "\nPlay \"$dealer\"\n";
-    $currentIndex = array_search($dealer, $rotation);
-    foreach ($play as $i => $card) {
-        $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
-        $currentIndex = ($currentIndex + 1) % 4;
-    }
-
-    return $pbn;
+     return $pbn;
 }
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
