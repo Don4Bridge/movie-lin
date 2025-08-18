@@ -133,7 +133,11 @@ function mapAuctionSeats(string $dealerSeat, array $auction): array {
  * @param array $auction Array of mb| bids (e.g. ['1N', '2C', 'P', '2D', ...])
  * @return string Declarer seat ('N', 'E', 'S', 'W')
  */
-    
+ echo "<pre>";
+var_dump($dealer);
+var_dump(count($rotation));
+echo "</pre>";
+   
 function determineDeclarer(string $dealer, array $auction): string {
     $rotation = ['N', 'E', 'S', 'W'];
     $startIndex = array_search($dealer, $rotation);
