@@ -4,7 +4,7 @@ function normalize_lin_preserving_order($lin) {
     $rawPairs = [];
     $boardNumber = 'unknown';
 
-    // Parse into tag-value pairs
+    // Parse into tag-value pairs without skipping anything
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
         $value = $parts[$i + 1];
@@ -31,7 +31,7 @@ function normalize_lin_preserving_order($lin) {
         }
     }
 
-    // Combine injected tags + original pairs
+    // Combine injected tags + original pairs (preserving original order)
     $finalPairs = array_merge($tagsToInject, $rawPairs);
 
     // Rebuild LIN string
@@ -42,7 +42,6 @@ function normalize_lin_preserving_order($lin) {
 
     return [$normalized, $boardNumber];
 }
-
 // Serve download if requested
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
