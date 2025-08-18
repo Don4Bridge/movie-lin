@@ -1,16 +1,13 @@
 <?php
-$url = $_GET['url'] ?? '';
-if (!$url) {
-    echo "Usage: /?url=https://...bridgebase.com/tools/handviewer.html?lin=...";
-    exit;
+if (isset($_GET['url'])) {
+    $target = $_GET['url'];
+    // Basic validation to prevent open redirect abuse
+    if (strpos($target, 'bridgebase.com/tools/handviewer.html?lin=') !== false) {
+        header("Location: $target");
+        exit;
+    } else {
+        echo "Invalid URL.";
+    }
+} else {
+    echo "Usage: /?url=https://www.bridgebase.com/tools/handviewer.html?lin=...";
 }
-
-$parts = parse_url($url);
-parse_str($parts['query'], $query);
-$lin = urldecode($query['lin'] ?? '');
-$formatted = str_replace('|', "|\n", $lin);
-
-// Send as downloadable file
-header("Content-Type: text/plain");
-header("Content-Disposition: attachment; filename=hand.lin");
-echo $formatted;
