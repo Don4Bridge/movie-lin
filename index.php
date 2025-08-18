@@ -1,3 +1,5 @@
+<?php
+
 function normalizeLin($lin) {
     // Preserve pn| if it has 4 names, else fallback
     $lin = preg_replace_callback('/pn\|([^|]+)/', function($matches) {
@@ -39,3 +41,72 @@ function normalizeLin($lin) {
     $lin = preg_replace('/\s+/', '', $lin);
     return $lin;
 }
+
+function extractValidLin($lin) {
+    $validTags = ['pn', 'md', 'sv', 'mb', 'pc', 'pg', 'mc', 'qx', 'nt', 'ah', 'an', 'px', 'st', 'rh'];
+    $parts = explode('|', $lin);
+    $cleaned = [];
+
+    for ($i = 0; $i < count($parts) - 1; $i += 2) {
+        $tag = $parts[$i];
+        $value = $parts[$i + 1];
+        if (in_array($tag, $validTags)) {
+            $cleaned[] = $tag . '|' . $value;
+        }
+    }
+
+    return implode('|', $cleaned);
+}
+
+function ensureFullPlay($lin) {
+    $playCount = substr_count($lin, 'pc|');
+    if ($playCount < 52) {
+        $missing = 52 - $playCount;
+        for ($i = 0; $i < $missing; $i++) {
+            $lin .= '|pc|XX';
+        }
+    }
+    if (substr($lin, -1) !== '|') {
+        $lin .= '|';
+    }
+    return $lin;
+}
+
+// Entry point
+$rawLin = $_GET['lin'] ?? $_POST['lin'] ?? '';
+$decodedLin = urldecode($rawLin);
+
+if (!$rawLin) {
+    echo '<!DOCTYPE html><html><head><title>Bridge LIN Cleaner</title></head><body>';
+    echo '<h2>Bridge LIN Cleaner</h2>';
+    echo '<form method="post">';
+    echo '<label for="lin">Paste LIN string or URL:</label><br>';
+    echo '<textarea name="lin" rows="6" cols="80"></textarea><br>';
+    echo '<button type="submit">Clean LIN</button>';
+    echo '</form>';
+    echo '</body></html>';
+    exit;
+}
+
+$normalizedLin = normalizeLin($decodedLin);
+$cleanedLin = extractValidLin($normalizedLin);
+$finalLin = ensureFullPlay($cleanedLin);
+
+// Handle download
+if (isset($_GET['download'])) {
+    header('Content-Type: text/plain');
+    header('Content-Disposition: attachment; filename="hand.lin"');
+    echo $finalLin;
+    exit;
+}
+
+// Show preview and links
+$encodedFinal = urlencode($finalLin);
+$handviewerUrl = "https://www.bridgebase.com/tools/handviewer.html?lin=" . $encodedFinal;
+
+echo '<!DOCTYPE html><html><head><title>Cleaned LIN Output</title></head><body>';
+echo '<h2>Cleaned LIN Output</h2>';
+echo '<pre>' . htmlspecialchars($finalLin) . '</pre>';
+echo '<p><a href="?download=1&lin=' . urlencode($rawLin) . '">⬇️ Download LIN File</a></p>';
+echo '<p><a href="' . $handviewerUrl . '" target="_blank">🔍 View in BBO Handviewer</a></p>';
+echo '</body></html>';
