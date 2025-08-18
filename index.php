@@ -93,27 +93,29 @@ function lin_to_pbn($lin) {
     $vulCode = $tags['sv'][0] ?? 'o';
     $vul = $vulMap[$vulCode] ?? 'None';
 
-    // 🧠 Contract
-    $lastBid = 'Pass';
+    // ✅ Extract Contract from LIN
+    $contractBid = null;
     foreach ($auction as $bid) {
-        if (!in_array($bid, ['p', 'ap'])) {
-            $lastBid = $bid;
+        if (!in_array(strtolower($bid), ['p', 'ap'])) {
+            $contractBid = $bid;
         }
     }
+    $lastBid = $contractBid ?? 'Pass';
 
-    // 🧠 Declarer (first to bid final strain)
+    // ✅ Extract Declarer from LIN
     $strain = preg_replace('/[^A-Z]/', '', $lastBid);
+    $rotation = ['N', 'E', 'S', 'W'];
+    $startIndex = array_search($dealer, $rotation);
     $declarerIndex = null;
     foreach ($auction as $i => $bid) {
         if (strpos($bid, $strain) !== false) {
-            $declarerIndex = $i % 4;
+            $declarerIndex = ($startIndex + $i) % 4;
             break;
         }
     }
-    $seatMap = ['N', 'E', 'S', 'W'];
-    $declarer = $seatMap[$declarerIndex] ?? $dealer;
+    $declarer = $rotation[$declarerIndex] ?? $dealer;
 
-    // 🧪 Result (trick count)
+    // ✅ Extract Result from LIN
     $tricks = floor(count($play) / 4);
     $result = (string)$tricks;
 
@@ -135,7 +137,6 @@ function lin_to_pbn($lin) {
 
     // 🧾 Auction Block
     $pbn .= "\nAuction \"$dealer\"\n";
-    $rotation = ['N', 'E', 'S', 'W'];
     $currentIndex = array_search($dealer, $rotation);
     foreach ($auction as $i => $bid) {
         $pbn .= $bid;
@@ -143,7 +144,15 @@ function lin_to_pbn($lin) {
         $pbn .= ($i + 1) % 4 === 0 ? "\n" : " ";
     }
 
-     return $pbn;
+    // 🧾 Play Block
+    $pbn .= "\nPlay \"$declarer\"\n";
+    $currentIndex = array_search($dealer, $rotation);
+    foreach ($play as $i => $card) {
+        $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
+        $currentIndex = ($currentIndex + 1) % 4;
+    }
+
+    return $pbn;
 }
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
