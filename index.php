@@ -101,6 +101,7 @@ function lin_to_pbn($lin) {
         }
     }
     $lastBid = $contractBid ?? 'Pass';
+    $lastBid = preg_replace('/^(\d)N$/', '$1NT', $lastBid);
 
     // ✅ Extract Declarer from LIN
     $strain = preg_replace('/[^A-Z]/', '', $lastBid);
