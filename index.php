@@ -89,6 +89,28 @@ function lin_to_pbn($lin) {
     list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
     $dealer = $mdDealer;
 
+    /**
+ * Maps each bid in the LIN auction to its correct seat based on dealer.
+ *
+ * @param string $dealerSeat One of 'N', 'E', 'S', 'W'
+ * @param array $auction Array of mb| bids (e.g. ['1N', '2C', 'P', '2D', ...])
+ * @return array Array of ['seat' => 'N', 'bid' => '1N'] entries
+ */
+function mapAuctionSeats(string $dealerSeat, array $auction): array {
+    $rotation = ['N', 'E', 'S', 'W'];
+    $startIndex = array_search($dealerSeat, $rotation);
+    $mapped = [];
+
+    foreach ($auction as $i => $rawBid) {
+        $seatIndex = ($startIndex + $i) % 4;
+        $seat = $rotation[$seatIndex];
+        $cleanBid = explode('|', $rawBid)[0]; // strip annotations if present
+        $mapped[] = ['seat' => $seat, 'bid' => $cleanBid];
+    }
+
+    return $mapped;
+}
+
     // 🔍 Vulnerability
     $vulMap = ['o' => 'None', 'b' => 'Both', 'n' => 'NS', 'e' => 'EW'];
     $vulCode = $tags['sv'][0] ?? 'o';
