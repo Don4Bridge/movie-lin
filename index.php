@@ -97,8 +97,12 @@ function lin_to_pbn($lin) {
  * @return array Array of ['seat' => 'N', 'bid' => '1N'] entries
  */
 function mapAuctionSeats(string $dealerSeat, array $auction): array {
-    $rotation = ['N', 'E', 'S', 'W'];
-    $startIndex = array_search($dealerSeat, $rotation);
+ $rotation = ['N', 'E', 'S', 'W']; // ✅ define before use
+
+echo "<p>Dealer: $dealer</p>";
+echo "<p>Rotation count: " . count($rotation) . "</p>";
+
+$startIndex = array_search($dealer, $rotation);
     $mapped = [];
 
     foreach ($auction as $i => $rawBid) {
