@@ -1,68 +1,63 @@
 <?php
+
+// Normalize player names and md| tag
+function normalizeLin($lin) {
+    // Step 1: Normalize player names
+    $lin = preg_replace('/pn\|[^|]+/', 'pn|North,East,South,West', $lin);
+
+    // Step 2: Normalize md| tag
+    $lin = preg_replace_callback('/md\|([1-4])([^|]*)/', function($matches) {
+        $dealer = $matches[1];
+        $hands = explode(',', $matches[2]);
+
+        $fixedHands = array_map(function($hand) {
+            // Extract suit segments
+            preg_match_all('/([SHDC])([^SHDC]*)/', $hand, $parts, PREG_SET_ORDER);
+
+            // Initialize all suits
+            $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+
+            foreach ($parts as $part) {
+                $suits[$part[1]] = $part[2];
+            }
+
+            // Reconstruct hand in correct order
+            return 'S' . $suits['S'] . 'H' . $suits['H'] . 'D' . $suits['D'] . 'C' . $suits['C'];
+        }, $hands);
+
+        return 'md|' . $dealer . implode(',', $fixedHands);
+    }, $lin);
+
+    // Step 3: Optional cleanup
+    $lin = preg_replace('/\s+/', '', $lin);
+
+    return $lin;
+}
+
+// Optional: Strip unsupported tags or sanitize further
 function extractValidLin($lin) {
-    // Remove HTML tags and annotation markers
-    $lin = strip_tags($lin);
-    $lin = str_replace('!', '', $lin);
+    // Keep only known tags
+    $validTags = ['pn', 'md', 'sv', 'mb', 'pc', 'pg', 'mc', 'qx', 'nt', 'ah', 'an', 'px'];
+    $parts = explode('|', $lin);
+    $cleaned = [];
 
-    // Extract only supported LIN tags
-    preg_match_all('/(?:pn|md|sv|mb|pc)\|[^|]+(?:\|[^|]+)*/', $lin, $matches);
-    return implode('|', $matches[0]);
-}
-
-function isValidLin($lin) {
-    return strpos($lin, 'pn|') !== false &&
-           strpos($lin, 'md|') !== false &&
-           strpos($lin, 'mb|') !== false &&
-           strpos($lin, 'pc|') !== false;
-}
-
-$cleanedLin = '';
-$error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $rawLin = trim($_POST['lin'] ?? '');
-
-    // Decode if URL-encoded
-    $decodedLin = urldecode($rawLin);
-
-    // Extract and clean
-    $cleanedLin = extractValidLin($decodedLin);
-
-    if (isValidLin($cleanedLin)) {
-        $encoded = urlencode($cleanedLin);
-        header("Location: https://www.bridgebase.com/tools/handviewer.html?lin=$encoded");
-        exit;
-    } else {
-        $error = "Invalid LIN format. Please check for missing tags like pn|, md|, mb|, pc|.";
+    for ($i = 0; $i < count($parts) - 1; $i += 2) {
+        $tag = $parts[$i];
+        $value = $parts[$i + 1];
+        if (in_array($tag, $validTags)) {
+            $cleaned[] = $tag . '|' . $value;
+        }
     }
+
+    return implode('|', $cleaned);
 }
-?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bridge Hand Viewer Redirect</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        textarea { width: 100%; font-family: monospace; }
-        .error { color: red; }
-        .preview { background: #f9f9f9; padding: 10px; border: 1px solid #ccc; margin-top: 20px; }
-    </style>
-</head>
-<body>
-    <h1>Bridge Hand Viewer</h1>
-    <form method="post">
-        <label for="lin">Paste your LIN string (raw or URL-encoded):</label><br>
-        <textarea name="lin" id="lin" rows="10" placeholder="pn|...md|...mb|...pc|... or URL-encoded LIN"></textarea><br><br>
-        <button type="submit">View Hand</button>
-    </form>
+// Entry point
+$rawLin = $_GET['lin'] ?? $_POST['lin'] ?? '';
+$decodedLin = urldecode($rawLin);
+$normalizedLin = normalizeLin($decodedLin);
+$cleanedLin = extractValidLin($normalizedLin);
 
-    <?php if (!empty($error)): ?>
-        <p class="error"><?= htmlspecialchars($error) ?></p>
-    <?php elseif (!empty($cleanedLin)): ?>
-        <div class="preview">
-            <strong>Cleaned LIN Preview:</strong><br>
-            <pre><?= htmlspecialchars($cleanedLin) ?></pre>
-        </div>
-    <?php endif; ?>
-</body>
-</html>
+// Output as plain text
+header('Content-Type: text/plain');
+echo $cleanedLin;
