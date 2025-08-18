@@ -1,38 +1,89 @@
 <?php
-function patchLinEnding($lin) {
+function normalize_lin($lin) {
     $parts = explode('|', $lin);
-    $pcCount = 0;
-    $hasPg = false;
-    $hasMc = false;
-
-    // Scan for pc| tags and ending tags
+    $tagMap = [];
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
-        if ($parts[$i] === 'pc') {
-            $pcCount++;
-        } elseif ($parts[$i] === 'pg') {
-            $hasPg = true;
-        } elseif ($parts[$i] === 'mc') {
-            $hasMc = true;
+        $tag = $parts[$i];
+        $value = $parts[$i + 1];
+        if (!isset($tagMap[$tag])) {
+            $tagMap[$tag] = [];
+        }
+        $tagMap[$tag][] = $value;
+    }
+
+    $fallbacks = [
+        'pn' => ['North,East,South,West'],
+        'rh' => ['N,E,S,W'],
+        'st' => ['BBO Tournament']
+    ];
+
+    foreach (['pn', 'rh', 'st'] as $tag) {
+        if (!isset($tagMap[$tag]) || !array_filter($tagMap[$tag])) {
+            $tagMap[$tag] = $fallbacks[$tag];
         }
     }
 
-    echo "Cards played: $pcCount\n";
-
-    // Append missing ending tags
-    if (!$hasPg) {
-        $lin .= '|pg|';
-        echo "Appended pg|\n";
-    }
-    if (!$hasMc) {
-        $lin .= '|mc|';
-        echo "Appended mc|\n";
+    $ordered = [];
+    foreach (['pn', 'rh', 'st'] as $tag) {
+        foreach ($tagMap[$tag] as $value) {
+            $ordered[] = $tag . '|' . $value;
+        }
+        unset($tagMap[$tag]);
     }
 
-    return $lin;
+    foreach ($tagMap as $tag => $values) {
+        foreach ($values as $value) {
+            $ordered[] = $tag . '|' . $value;
+        }
+    }
+
+    return implode('|', $ordered);
 }
 
-// Example usage
-$rawLin = 'pn|N,S,E,W|md|1SKQJHKTDC9876,SA987H5432DQT5C4,S5432H987D32C32,S6H6DAKJACAKQJ|mb|1S|mb|2S|mb|3S|mb|ap|pc|C4|pc|C2|pc|C3|pc|C6|pc|D5|pc|D2|pc|D3|pc|D6|pc|H2|pc|H3|pc|H4|pc|H5|pc|S2|pc|S3|pc|S4|pc|S5|pc|C5|pc|C7|pc|C8|pc|C9|pc|D7|pc|D8|pc|D9|pc|DT|pc|H6|pc|H7|pc|H8|pc|H9|pc|S6|pc|S7|pc|S8|pc|S9|pc|CA|pc|CK|pc|CQ|pc|CJ|pc|DA|pc|DK|pc|DQ|pc|DJ|pc|HA|pc|HK|pc|HQ|pc|HJ|pc|SA|pc|SK|pc|SQ|pc|SJ';
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
+    $url = trim($_POST['url']);
+    $parsed = parse_url($url);
+    parse_str($parsed['query'] ?? '', $query);
 
-$patchedLin = patchLinEnding($rawLin);
-echo "\nPatched LIN:\n$patchedLin\n";
+    if (!isset($query['lin'])) {
+        echo "<p>❌ Invalid BBO movie URL. LIN string not found.</p>";
+        echo "<p><a href=''>🔁 Try again</a></p>";
+        exit;
+    }
+
+    $rawLin = $query['lin'];
+    $normalized = normalize_lin($rawLin);
+    $filename = 'converted.lin';
+    file_put_contents($filename, $normalized);
+
+    $viewerUrl = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalized);
+
+    echo "<h2>✅ LIN Converted</h2>";
+    echo "<p><strong>Handviewer:</strong> <a href='$viewerUrl' target='_blank'>$viewerUrl</a></p>";
+    echo "<p><a href='$filename' download>📥 Download LIN File</a></p>";
+    echo "<pre style='white-space:pre-wrap;background:#f0f0f0;padding:1em;border-radius:5px;'>$normalized</pre>";
+    echo "<p><a href=''>🔁 Convert another</a></p>";
+    exit;
+}
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BBO Movie → Handviewer</title>
+    <style>
+        body { font-family: sans-serif; padding: 2em; max-width: 700px; margin: auto; }
+        input[type="text"] { width: 100%; padding: 0.5em; font-size: 1em; }
+        button { padding: 0.5em 1em; font-size: 1em; margin-top: 1em; }
+    </style>
+</head>
+<body>
+    <h1>🎬 Convert BBO Movie to Handviewer</h1>
+    <form method="post">
+        <label for="url">Paste BBO movie URL:</label><br>
+        <input type="text" name="url" required placeholder="https://www.bridgebase.com/tools/movie.html?lin=..."><br>
+        <button type="submit">Convert</button>
+    </form>
+</body>
+</html>
