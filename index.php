@@ -83,8 +83,8 @@ function lin_to_pbn($lin) {
 
     $auction = isset($tags['mb']) ? $tags['mb'] : [];
     $play = isset($tags['pc']) ? $tags['pc'] : [];
+    
     $md = isset($tags['md']) ? 'md|' . $tags['md'][0] : '';
-
     list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
     $dealer = $mdDealer;
 
