@@ -113,10 +113,8 @@ function lin_to_pbn($lin) {
     }
     error_log("✅ Final PBN output length: " . strlen($pbn));
     return $pbn;
-    return $pbn ?? '';
-}
-error_log("✅ PBN text preview:\n" . substr($pbnText, 0, 300));
-error_log("✅ Writing to file: $pbnFilename");
+    }
+
 
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
@@ -151,9 +149,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     $linFilename = $boardNumber . '.lin';
     file_put_contents($linFilename, $normalized);
 
-    $pbnText = lin_to_pbn($normalized);
-    $pbnFilename = $boardNumber . '.pbn';
-    file_put_contents($pbnFilename, $pbnText);
+  $pbnText = lin_to_pbn($normalized);
+  error_log("✅ PBN text preview:\n" . substr($pbnText, 0, 300));
+  $pbnFilename = $boardNumber . '.pbn';
+  error_log("✅ Writing to file: $pbnFilename");
+  file_put_contents($pbnFilename, $pbnText);
 
     $viewerUrl = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalized);
 
