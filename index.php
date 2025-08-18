@@ -22,7 +22,8 @@ function normalize_lin_preserving_order($lin) {
     }
 
     return [$normalized, $boardNumber];
-}}
+}
+
 // Serve download if requested
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
