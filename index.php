@@ -113,6 +113,7 @@ function lin_to_pbn($lin) {
     }
 
     return $pbn;
+    return $pbn ?? '';
 }
 error_log("✅ PBN text preview:\n" . substr($pbnText, 0, 300));
 error_log("✅ Writing to file: $pbnFilename");
