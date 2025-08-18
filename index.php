@@ -75,13 +75,8 @@ function lin_to_pbn($lin) {
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tags[$parts[$i]][] = $parts[$i + 1];
     }
-    if (!isset($tags['md'])) {
-    error_log("❌ No md| tag found in LIN.");
-}
+
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
-    list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
-    list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
-    $dealer = $mdDealer;
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
     preg_match('/Board\s+(\d+)/i', $boardTitle, $matches);
     $boardNum = isset($matches[1]) ? $matches[1] : '1';
@@ -89,6 +84,9 @@ function lin_to_pbn($lin) {
     $auction = isset($tags['mb']) ? $tags['mb'] : [];
     $play = isset($tags['pc']) ? $tags['pc'] : [];
     $md = isset($tags['md']) ? 'md|' . $tags['md'][0] : '';
+
+    list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
+    $dealer = $mdDealer;
 
     $pbn = "[Event \"BBO Tournament\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
@@ -98,14 +96,26 @@ function lin_to_pbn($lin) {
     $pbn .= "[North \"{$players[0]}\"]\n";
     $pbn .= "[East \"{$players[1]}\"]\n";
     $pbn .= "[South \"{$players[2]}\"]\n";
+    $pbn .= $dealTag . "\n";
 
-    if ($md) {
-     list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
-     $dealer = $mdDealer;
-
-        $pbn .= $dealTag . "\n";
+    $pbn .= "\nAuction \"$dealer\"\n";
+    $rotation = ['N', 'E', 'S', 'W'];
+    $currentIndex = array_search($dealer, $rotation);
+    foreach ($auction as $i => $bid) {
+        $pbn .= $bid;
+        $currentIndex = ($currentIndex + 1) % 4;
+        $pbn .= ($i + 1) % 4 === 0 ? "\n" : " ";
     }
 
+    $pbn .= "\nPlay \"$dealer\"\n";
+    $currentIndex = array_search($dealer, $rotation);
+    foreach ($play as $i => $card) {
+        $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
+        $currentIndex = ($currentIndex + 1) % 4;
+    }
+
+    return $pbn;
+}
     // Auction
     $pbn .= "\nAuction \"$dealer\"\n";
     $rotation = ['N', 'E', 'S', 'W'];
