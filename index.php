@@ -115,35 +115,6 @@ function lin_to_pbn($lin) {
     }
 
     return $pbn;
-}
-    // Auction
-    $pbn .= "\nAuction \"$dealer\"\n";
-    $rotation = ['N', 'E', 'S', 'W'];
-    $currentIndex = array_search($dealer, $rotation);
-
-    foreach ($auction as $i => $bid) {
-        $pbn .= $bid;
-        $currentIndex = ($currentIndex + 1) % 4;
-        $pbn .= ($i + 1) % 4 === 0 ? "\n" : " ";
-    }
-
-    // Play
-    if (!empty($play)) {
-        $pbn .= "\nPlay \"$dealer\"\n";
-        $currentIndex = array_search($dealer, $rotation);
-
-        foreach (array_chunk($play, 4) as $trick) {
-            foreach ($trick as $card) {
-                $pbn .= $rotation[$currentIndex] . " " . $card . "\n";
-                $currentIndex = ($currentIndex + 1) % 4;
-            }
-            $currentIndex = array_search($dealer, $rotation);
-        }
-    }
-    error_log("✅ Final PBN output length: " . strlen($pbn));
-    return $pbn;
-    }
-
 
 if (isset($_GET['download'])) {
     $filename = basename($_GET['download']);
