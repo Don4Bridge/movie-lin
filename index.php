@@ -257,11 +257,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     parse_str($parsed['query'] ?? '', $query);
 
     if (!isset($query['lin'])) {
-        echo "<p>❌ Invalid BBO movie URL. LIN string not found.</p>";
-        echo "<p><a href=''>🔁 Try again</a></p>";
-    }
-
-    $rawLin = $query['lin'];
+    echo "<p>❌ Invalid BBO movie URL. LIN string not found.</p>";
+    echo "<p><a href=''>🔁 Try again</a></p>";
+    exit;
+}
+    $rawLin = $query['lin']; // safe now
     list($normalized, $boardNumber) = normalize_lin_preserving_order($rawLin);
     $linFilename = $boardNumber . '.lin';
     file_put_contents($linFilename, $normalized);
