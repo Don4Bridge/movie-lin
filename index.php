@@ -119,9 +119,6 @@ function lin_to_pbn($lin) {
 
        $result = 7; // declarer took all 13 tricks
 
-
-$pbn .= '[Result "' . $result . "\"]\n";
-
     // 🧾 PBN Header
     $pbn = "[Event \"BBO Tournament\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
