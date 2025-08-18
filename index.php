@@ -1,8 +1,15 @@
 <?php
 
 function normalizeLin($lin) {
-    $lin = preg_replace('/pn\|[^|]+/', 'pn|North,East,South,West', $lin);
+    // Preserve pn| if it has 4 names, else fallback
+    $lin = preg_replace_callback('/pn\|([^|]+)/', function($matches) {
+        $names = explode(',', $matches[1]);
+        return count($names) === 4
+            ? 'pn|' . implode(',', $names)
+            : 'pn|North,East,South,West';
+    }, $lin);
 
+    // Normalize md| tag
     $lin = preg_replace_callback('/md\|([1-4])([^|]*)/', function($matches) {
         $dealer = $matches[1];
         $hands = explode(',', $matches[2]);
@@ -44,7 +51,7 @@ function ensureFullPlay($lin) {
     if ($playCount < 52) {
         $missing = 52 - $playCount;
         for ($i = 0; $i < $missing; $i++) {
-            $lin .= '|pc|XX'; // placeholder to preserve structure
+            $lin .= '|pc|XX';
         }
     }
     if (substr($lin, -1) !== '|') {
