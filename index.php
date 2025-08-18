@@ -49,20 +49,14 @@
             }
         }
 
-        // Ensure pn| is present and first
+        // Fallbacks only if missing or empty
         if (!isset($tagMap['pn']) || empty($tagMap['pn'][0])) {
-        $tagMap['pn'] = ['North,East,South,West'];
+            $tagMap['pn'] = ['North,East,South,West'];
         }
-
-        }
-
-        // Ensure rh| is present
-        if (!isset($tagMap['rh'])) {
+        if (!isset($tagMap['rh']) || empty($tagMap['rh'][0])) {
             $tagMap['rh'] = ['N,E,S,W'];
         }
-
-        // Ensure st| is present
-        if (!isset($tagMap['st'])) {
+        if (!isset($tagMap['st']) || empty($tagMap['st'][0])) {
             $tagMap['st'] = ['BBO Tournament'];
         }
 
