@@ -150,10 +150,14 @@ function determineDeclarer(string $dealer, array $auction): string {
         error_log("❌ Invalid dealer seat: $dealer");
         return 'N'; // fallback
     }
-    $auctionRaw = $tags['mb'] ?? [];
-    $auction = array_map(function($bid) {
-    return str_starts_with($bid, 'mb|') ? substr($bid, 3) : $bid;
-    }, $auctionRaw);
+
+    // ✅ Use the passed-in $auction, not $tags['mb']
+    $auctionClean = array_map(function($bid) {
+        return str_starts_with($bid, 'mb|') ? substr($bid, 3) : $bid;
+    }, $auction);
+
+    // Continue with declarer logic...
+}
 
 $declarer = determineDeclarer($dealer, $auction);
 
