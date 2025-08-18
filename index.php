@@ -76,7 +76,7 @@ function lin_to_pbn($lin) {
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tags[$parts[$i]][] = $parts[$i + 1];
     }
-
+    $rotation = ['N', 'E', 'S', 'W'];
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
     preg_match('/Board\s+(\d+)/i', $boardTitle, $matches);
