@@ -79,7 +79,8 @@ function lin_to_pbn($lin) {
     error_log("❌ No md| tag found in LIN.");
 }
     $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
-    $dealer = isset($tags['rh']) && strlen($tags['rh'][0]) > 0 ? $tags['rh'][0][0] : 'N';
+    list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
+    $dealer = $mdDealer;
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
     preg_match('/Board\s+(\d+)/i', $boardTitle, $matches);
     $boardNum = isset($matches[1]) ? $matches[1] : '1';
@@ -98,7 +99,9 @@ function lin_to_pbn($lin) {
     $pbn .= "[South \"{$players[2]}\"]\n";
 
     if ($md) {
-        list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
+     list($mdDealer, $dealTag) = parse_md_to_pbn_deal($md);
+     $dealer = $mdDealer;
+
         $pbn .= $dealTag . "\n";
     }
 
