@@ -1,5 +1,10 @@
 <?php
 function normalize_lin_preserving_order($lin) {
+    if (!is_string($lin) || trim($lin) === '') {
+        error_log("❌ Empty or invalid LIN string.");
+        return ['', 'unknown'];
+    }
+
     $parts = explode('|', $lin);
     $rawPairs = [];
     $boardNumber = 'unknown';
@@ -10,8 +15,12 @@ function normalize_lin_preserving_order($lin) {
         $value = $parts[$i + 1];
         $rawPairs[] = [$tag, $value];
 
+        // Debug: log each tag-value pair
+        error_log("Parsed tag: $tag | value: $value");
+
         if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $value, $matches)) {
             $boardNumber = 'board-' . $matches[1];
+            error_log("✅ Board number detected: $boardNumber");
         }
     }
 
@@ -20,6 +29,9 @@ function normalize_lin_preserving_order($lin) {
     foreach ($rawPairs as [$tag, $value]) {
         $normalized .= $tag . '|' . $value . '|';
     }
+
+    // Debug: log final LIN preview
+    error_log("✅ Normalized LIN preview: " . substr($normalized, 0, 200));
 
     return [$normalized, $boardNumber];
 }
@@ -62,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     $viewerUrl = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalized);
 
     echo "<h2>✅ LIN Converted</h2>";
+    echo "<p><strong>Board:</strong> $boardNumber</p>";
     echo "<p><strong>Handviewer:</strong> <a href='$viewerUrl' target='_blank'>🔗 Handviewer Link</a></p>";
     echo "<p><a href='?download=$filename'>📥 Download LIN File</a></p>";
     echo "<pre style='white-space:pre-wrap;background:#f0f0f0;padding:1em;border-radius:5px;'>$normalized</pre>";
