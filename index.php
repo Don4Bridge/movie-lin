@@ -1,41 +1,35 @@
 <?php
-function cleanLin($lin) {
-    // Remove HTML tags
+function extractValidLin($lin) {
+    // Remove HTML tags and annotation markers
     $lin = strip_tags($lin);
+    $lin = str_replace('!', '', $lin);
 
-    // Remove unsupported or empty tags
-    $lin = preg_replace('/\|st\|\|?/', '', $lin);
-    $lin = preg_replace('/\|rh\|\|?/', '', $lin);
-    $lin = preg_replace('/\|ah\|.*?\|/', '', $lin);
-    $lin = preg_replace('/\|an\|.*?\|/', '', $lin);
-
-    // Remove any double pipes
-    $lin = str_replace('||', '|', $lin);
-
-    // Remove whitespace
-    $lin = trim($lin);
-    $lin = preg_replace('/\s+/', '', $lin);
-
-    return $lin;
+    // Extract only supported LIN tags
+    preg_match_all('/(?:pn|md|sv|mb|pc)\|[^|]+(?:\|[^|]+)*/', $lin, $matches);
+    return implode('|', $matches[0]);
 }
 
 function isValidLin($lin) {
-    // Must contain essential tags
     return strpos($lin, 'pn|') !== false &&
            strpos($lin, 'md|') !== false &&
            strpos($lin, 'mb|') !== false &&
            strpos($lin, 'pc|') !== false;
 }
 
+$cleanedLin = '';
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rawLin = trim($_POST['lin'] ?? '');
-    $cleanedLin = cleanLin($rawLin);
+
+    // Decode if URL-encoded
+    $decodedLin = urldecode($rawLin);
+
+    // Extract and clean
+    $cleanedLin = extractValidLin($decodedLin);
 
     if (isValidLin($cleanedLin)) {
         $encoded = urlencode($cleanedLin);
-        $target = "https://www.bridgebase.com/tools/handviewer.html?lin=$encoded";
-        header("Location: $target");
+        header("Location: https://www.bridgebase.com/tools/handviewer.html?lin=$encoded");
         exit;
     } else {
         $error = "Invalid LIN format. Please check for missing tags like pn|, md|, mb|, pc|.";
@@ -51,17 +45,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         body { font-family: Arial, sans-serif; margin: 40px; }
         textarea { width: 100%; font-family: monospace; }
         .error { color: red; }
+        .preview { background: #f9f9f9; padding: 10px; border: 1px solid #ccc; margin-top: 20px; }
     </style>
 </head>
 <body>
     <h1>Bridge Hand Viewer</h1>
     <form method="post">
-        <label for="lin">Paste your LIN string:</label><br>
-        <textarea name="lin" id="lin" rows="10" placeholder="pn|...md|...mb|...pc|..."></textarea><br><br>
+        <label for="lin">Paste your LIN string (raw or URL-encoded):</label><br>
+        <textarea name="lin" id="lin" rows="10" placeholder="pn|...md|...mb|...pc|... or URL-encoded LIN"></textarea><br><br>
         <button type="submit">View Hand</button>
     </form>
+
     <?php if (!empty($error)): ?>
         <p class="error"><?= htmlspecialchars($error) ?></p>
+    <?php elseif (!empty($cleanedLin)): ?>
+        <div class="preview">
+            <strong>Cleaned LIN Preview:</strong><br>
+            <pre><?= htmlspecialchars($cleanedLin) ?></pre>
+        </div>
     <?php endif; ?>
 </body>
 </html>
