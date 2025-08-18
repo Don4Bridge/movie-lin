@@ -49,15 +49,17 @@
             }
         }
 
-        // Fallbacks only if missing or empty
-        if (!isset($tagMap['pn']) || empty($tagMap['pn'][0])) {
-            $tagMap['pn'] = ['North,East,South,West'];
-        }
-        if (!isset($tagMap['rh']) || empty($tagMap['rh'][0])) {
-            $tagMap['rh'] = ['N,E,S,W'];
-        }
-        if (!isset($tagMap['st']) || empty($tagMap['st'][0])) {
-            $tagMap['st'] = ['BBO Tournament'];
+        // Smarter fallbacks only if missing or empty
+        foreach (['pn', 'rh', 'st'] as $tag) {
+            if (!isset($tagMap[$tag]) || !array_filter($tagMap[$tag])) {
+                if ($tag === 'pn') {
+                    $tagMap[$tag] = ['North,East,South,West'];
+                } elseif ($tag === 'rh') {
+                    $tagMap[$tag] = ['N,E,S,W'];
+                } elseif ($tag === 'st') {
+                    $tagMap[$tag] = ['BBO Tournament'];
+                }
+            }
         }
 
         // Build ordered output
