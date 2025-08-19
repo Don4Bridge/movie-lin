@@ -81,7 +81,7 @@ function lin_to_pbn($lin) {
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
     preg_match('/Board\s+(\d+)/i', $boardTitle, $matches);
     $boardNum = isset($matches[1]) ? $matches[1] : '1';
-    $tags = parse_lin_tags($normalized); // assuming this function extracts tags from LIN
+    $tags = parse_lin_tags($lin); // ✅ Correct variable
 $auctionRaw = $tags['mb'] ?? [];
 
 $auction = array_map(function($bid) {
