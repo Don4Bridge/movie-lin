@@ -81,7 +81,12 @@ function lin_to_pbn($lin) {
     $boardTitle = isset($tags['ah']) ? $tags['ah'][0] : 'Board';
     preg_match('/Board\s+(\d+)/i', $boardTitle, $matches);
     $boardNum = isset($matches[1]) ? $matches[1] : '1';
+    if (!is_array($auction)) {
+    error_log("❌ Auction is not an array. Initializing empty.");
+    $auction = [];
+    }
     $auction = array_slice($auction, 0, 100);
+
     $auction = isset($tags['mb']) ? $tags['mb'] : [];
     $play = isset($tags['pc']) ? $tags['pc'] : [];
 
