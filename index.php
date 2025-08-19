@@ -162,20 +162,6 @@ function determineDeclarer(string $dealer, array $auction): string {
     // Continue with declarer logic...
 }
 
-$declarer = determineDeclarer($dealer, $auction);
-
-    // Extract final contract bid
-    $finalBidIndex = -1;
-    $strain = null;
-    for ($i = count($auction) - 1; $i >= 0; $i--) {
-        $bid = explode('|', $auction[$i])[0];
-        if (preg_match('/[1-7](NT|[SHDC])/', $bid, $matches)) {
-            $finalBidIndex = $i;
-            $strain = $matches[1];
-            break;
-        }
-    }
-
     if ($finalBidIndex === -1 || !$strain) {
         error_log("❌ No valid contract bid found.");
         return 'N'; // fallback
@@ -184,13 +170,6 @@ $declarer = determineDeclarer($dealer, $auction);
     $finalBidderIndex = ($startIndex + $finalBidIndex) % 4;
     $finalBidderSeat = $rotation[$finalBidderIndex];
     $partnership = in_array($finalBidderSeat, ['N', 'S']) ? ['N', 'S'] : ['E', 'W'];
-
-   function determineDeclarer($dealer, $auction) {
-    $rotation = ['N', 'E', 'S', 'W'];
-    $startIndex = array_search($dealer, $rotation);
-    $strain = getStrain($auction); // assuming this exists
-    $partnership = getPartnership($dealer); // assuming this exists
-    $finalBidderSeat = getFinalBidder($dealer, $auction); // assuming this exists
 
     function determineDeclarer($dealer, $auction) {
     $rotation = ['N', 'E', 'S', 'W'];
