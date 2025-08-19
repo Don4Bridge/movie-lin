@@ -185,6 +185,20 @@ $declarer = determineDeclarer($dealer, $auction);
     $finalBidderSeat = $rotation[$finalBidderIndex];
     $partnership = in_array($finalBidderSeat, ['N', 'S']) ? ['N', 'S'] : ['E', 'W'];
 
+   function determineDeclarer($dealer, $auction) {
+    $rotation = ['N', 'E', 'S', 'W'];
+    $startIndex = array_search($dealer, $rotation);
+    $strain = getStrain($auction); // assuming this exists
+    $partnership = getPartnership($dealer); // assuming this exists
+    $finalBidderSeat = getFinalBidder($dealer, $auction); // assuming this exists
+
+    function determineDeclarer($dealer, $auction) {
+    $rotation = ['N', 'E', 'S', 'W'];
+    $startIndex = array_search($dealer, $rotation);
+    $strain = getStrain($auction); // assuming this exists
+    $partnership = getPartnership($dealer); // assuming this exists
+    $finalBidderSeat = getFinalBidder($dealer, $auction); // assuming this exists
+
     // Find first strain bid by partnership
     for ($i = 0; $i < count($auction); $i++) {
         $bid = explode('|', $auction[$i])[0];
