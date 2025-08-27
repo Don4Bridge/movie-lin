@@ -255,6 +255,7 @@
             $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . rawurlencode($normalizedLin);
         }
     }
+    }
     ?>
     <!DOCTYPE html>
     <html>
