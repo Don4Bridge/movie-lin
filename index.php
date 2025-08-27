@@ -256,7 +256,8 @@ function convert_lin_to_pbn($lin) {
             const pbnBlob = new Blob([pbnContent], { type: 'text/plain;charset=utf-8' });
             const pbnUrl = URL.createObjectURL(pbnBlob);
             document.getElementById('downloadPBN').href = pbnUrl;
-    </script>  </div>
+        </script>  
+        </div>
         <?php endif; ?>
     </body>
     </html>
