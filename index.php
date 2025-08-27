@@ -18,6 +18,9 @@ function normalize_lin($lin) {
 }
 
 function convert_lin_to_pbn($lin) {
+    case 'mb':
+    $auction[] = strtolower($next);
+    break;
     $lines = explode('|', $lin);
     $auction = [];
     $play = [];
@@ -25,8 +28,16 @@ function convert_lin_to_pbn($lin) {
     $vul = 'None';
     $board = '1';
     $deal = '';
-
-    foreach ($lines as $i => $val) {
+    case 'mb':
+    $auction[] = strtolower($next);
+    break;
+    case 'mb':
+    // Normalize bid: uppercase and fix "N" → "NT"
+    $bid = strtoupper($next);
+    if (preg_match('/^[1-7]N$/', $bid)) {
+        $bid = str_replace('N', 'NT', $bid);
+    
+        foreach ($lines as $i => $val) {
         $tag = $lines[$i];
         $next = $lines[$i + 1] ?? '';
 
