@@ -75,12 +75,21 @@ function convert_lin_to_pbn($lin) {
                     $rotated[] = $handsBySeat[$seat] ?? '';
                 }
 
-               function format_hand($hand) {
-    $suits = explode('.', $hand);
-    while (count($suits) < 4) {
-        $suits[] = ''; // pad missing suits
+              function format_hand($hand) {
+    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+    $suitOrder = ['S', 'H', 'D', 'C'];
+    $currentSuit = 'S'; // default starting suit
+
+    $chars = str_split($hand);
+    foreach ($chars as $char) {
+        if (in_array($char, $suitOrder)) {
+            $currentSuit = $char;
+        } else {
+            $suits[$currentSuit] .= $char;
+        }
     }
-    return implode('.', $suits);
+
+    return implode('.', array_map(fn($s) => $suits[$s], $suitOrder));
 }
 
 $formatted = array_map('format_hand', $rotated);
