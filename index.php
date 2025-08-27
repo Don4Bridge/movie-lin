@@ -17,7 +17,7 @@ function normalize_lin($lin) {
     return [$normalized, $boardId];
 }
 
-    function convert_lin_to_pbn($lin) {
+ function convert_lin_to_pbn($lin) {
     $lines = explode('|', $lin);
     $auction = [];
     $play = [];
@@ -109,26 +109,31 @@ function normalize_lin($lin) {
 
     // Determine final contract and declarer
     $contractBid = '';
-    foreach (array_reverse($auction) as $bid) {
-        if (!in_array($bid, ['P', 'X', 'XX'])) {
-            $contractBid = $bid;
+    $contractIndex = -1;
+    for ($i = count($auction) - 1; $i >= 0; $i--) {
+        if (!in_array($auction[$i], ['P', 'X', 'XX'])) {
+            $contractBid = $auction[$i];
+            $contractIndex = $i;
             break;
         }
     }
 
-    $seatOrder = ['W', 'N', 'E', 'S'];
-    $dealerIndex = array_search($dealer, $seatOrder);
-    $seats = [];
-    for ($i = 0; $i < count($auction); $i++) {
-        $seats[] = $seatOrder[($dealerIndex + $i) % 4];
-    }
-
-    $strain = preg_replace('/^[1-7]/', '', $contractBid);
     $declarer = '';
-    for ($i = 0; $i < count($auction); $i++) {
-        if (strpos($auction[$i], $strain) !== false) {
-            $declarer = $seats[$i];
-            break;
+    if ($contractBid !== '') {
+        $strain = preg_replace('/^[1-7]/', '', $contractBid);
+        $seatOrder = ['W', 'N', 'E', 'S'];
+        $dealerIndex = array_search($dealer, $seatOrder);
+        $seats = [];
+        for ($i = 0; $i < count($auction); $i++) {
+            $seats[] = $seatOrder[($dealerIndex + $i) % 4];
+        }
+
+        $declaringSide = in_array($seats[$contractIndex], ['N', 'S']) ? ['N', 'S'] : ['E', 'W'];
+        for ($i = 0; $i <= $contractIndex; $i++) {
+            if (strpos($auction[$i], $strain) !== false && in_array($seats[$i], $declaringSide)) {
+                $declarer = $seats[$i];
+                break;
+            }
         }
     }
 
