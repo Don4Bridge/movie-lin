@@ -75,7 +75,11 @@ function convert_lin_to_pbn($lin) {
                     $rotated[] = $handsBySeat[$seat] ?? '';
                 }
 
-              function format_hand($hand) {
+            function format_hand($hand) {
+    if (trim($hand) === '') {
+        return '. . . .';
+    }
+
     $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
     $currentSuit = null;
 
