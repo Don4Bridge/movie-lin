@@ -159,7 +159,14 @@ function normalize_lin($lin) {
     }
 
     $pbn .= "\nAuction \"$dealer\"\n" . implode(' ', $auction) . "\n\n";
-    $pbn .= "Play \"$openingLeader\"\n" . implode(' ', $play) . "\n";
+    // Group play into tricks of 4 cards each
+    $tricks = [];
+    for ($i = 0; $i < count($play); $i += 4) {
+    $trick = array_slice($play, $i, 4);
+    $tricks[] = implode(' ', $trick);
+}
+
+$pbn .= "Play \"$openingLeader\"\n" . implode(', ', $tricks) . "\n";
 
     return $pbn;
 }
