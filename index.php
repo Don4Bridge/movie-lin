@@ -1,3 +1,4 @@
+<?php
 function normalize_lin_preserving_order($lin) {
     if (!is_string($lin) || trim($lin) === '') {
         error_log("❌ Empty or invalid LIN string.");
@@ -29,8 +30,7 @@ function normalize_lin_preserving_order($lin) {
     error_log("✅ Normalized LIN preview: " . substr($normalized, 0, 200));
 
     return [$normalized, $boardNumber];
-} // ← CLOSE FUNCTION HERE
-
+}
 ?>
 <!DOCTYPE html>
 <html>
