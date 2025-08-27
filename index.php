@@ -18,7 +18,7 @@
     }
     
     function convert_lin_to_pbn($lin) {
-        $lines = explode('|', $lin);
+        $lines = !empty($lin) ? explode('|', $lin) : [];
         $auction = [];
         $play = [];
         $dealer = 'N';
@@ -237,12 +237,19 @@
 foreach ($tricks as $trick) {
     $pbn .= "$trick\n";
 }
+$lin = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
+    $url = $_POST['url'];
 
-return $pbn;
+    if (preg_match('/[?&]lin=([^&]+)/', $url, $matches)) {
+        $lin = urldecode($matches[1]);
+    }
 }
-$pbnContent = convert_lin_to_pbn($lin);
 
-    
+if ($lin !== '') {
+    $pbnContent = convert_lin_to_pbn($lin);
+}
+   
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $url = $_POST['url'];
     
