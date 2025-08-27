@@ -1,4 +1,6 @@
 <?php
+echo "✅ You are inside redirect.php<br>";
+exit;
 ob_start(); // Prevent accidental output before headers
 
 $board = $_GET['b'] ?? '';
