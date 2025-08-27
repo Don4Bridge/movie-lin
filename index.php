@@ -240,9 +240,8 @@ foreach ($tricks as $trick) {
 
 return $pbn;
 }
+$pbnContent = convert_lin_to_pbn($lin);
 
-
-   
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $url = $_POST['url'];
@@ -262,7 +261,6 @@ return $pbn;
     
             $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . rawurlencode($normalizedLin);
         }
-    }
     }
     ?>
     <!DOCTYPE html>
