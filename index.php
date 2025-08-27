@@ -19,35 +19,61 @@ function normalize_lin($lin) {
 
 function convert_lin_to_pbn($lin) {
     $lines = explode('|', $lin);
-    $meta = [
-        'Event' => 'BBO Movie',
-        'Site' => 'Bridge Base Online',
-        'Date' => date('Y.m.d'),
-        'Board' => '1',
-        'Auction' => '',
-        'Play' => ''
-    ];
+    $auction = [];
+    $play = [];
+    $dealer = 'N';
+    $vul = 'None';
+    $board = '1';
+    $deal = '';
 
-    for ($i = 0; $i < count($lines) - 1; $i += 2) {
+    foreach ($lines as $i => $val) {
         $tag = $lines[$i];
-        $val = $lines[$i + 1];
+        $next = $lines[$i + 1] ?? '';
 
-        if ($tag === 'mb') $meta['Auction'] .= $val . ' ';
-        if ($tag === 'pc') $meta['Play'] .= $val . ' ';
+        switch ($tag) {
+            case 'mb':
+                $auction[] = strtolower($next);
+                break;
+            case 'pc':
+                $play[] = strtoupper($next);
+                break;
+            case 'ah':
+                if (preg_match('/Board\s+(\d+)/i', $next, $m)) {
+                    $board = $m[1];
+                }
+                break;
+            case 'sv':
+                $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
+                $vul = $vulMap[strtolower($next)] ?? 'None';
+                break;
+            case 'md':
+                $dealerMap = ['1' => 'N', '2' => 'E', '3' => 'S', '4' => 'W'];
+                $dealer = $dealerMap[$next[0]] ?? 'N';
+
+                // Extract hands
+                $hands = explode(',', substr($next, 1));
+                if (count($hands) === 4) {
+                    $deal = "{$dealer}:{$hands[0]} {$hands[1]} {$hands[2]} {$hands[3]}";
+                }
+                break;
+        }
     }
 
-    $pbn = '';
-    foreach ($meta as $key => $val) {
-        if (in_array($key, ['Auction', 'Play'])) continue;
-        $pbn .= "[$key \"$val\"]\n";
+    $pbn = "[Event \"BBO Movie\"]\n";
+    $pbn .= "[Site \"Bridge Base Online\"]\n";
+    $pbn .= "[Date \"" . date('Y.m.d') . "\"]\n";
+    $pbn .= "[Board \"$board\"]\n";
+    $pbn .= "[Dealer \"$dealer\"]\n";
+    $pbn .= "[Vulnerable \"$vul\"]\n";
+    if ($deal) {
+        $pbn .= "[Deal \"$deal\"]\n";
     }
 
-    $pbn .= "\nAuction \"\"\n" . trim($meta['Auction']) . "\n\n";
-    $pbn .= "Play \"\"\n" . trim($meta['Play']) . "\n";
+    $pbn .= "\nAuction \"$dealer\"\n" . implode(' ', $auction) . "\n\n";
+    $pbn .= "Play \"$dealer\"\n" . implode(' ', $play) . "\n";
 
     return $pbn;
 }
-
 $handviewerLink = '';
 $linContent = '';
 $pbnContent = '';
