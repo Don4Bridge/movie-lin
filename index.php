@@ -233,10 +233,17 @@
             $tricks[] = implode(' ', $trick);
         }
     
-       $pbn .= "[Play \"$openingLeader\"]\n" . implode(':', $tricks) . "\n";
+     $pbn .= "[Play \"$openingLeader\"]\n";
+foreach ($tricks as $trick) {
+    $pbn .= "$trick\n";
+}
+foreach ($tricks as $trick) {
+    $pbn .= "$trick\n";
+}
 
 return $pbn;
 }
+
 
    
     
