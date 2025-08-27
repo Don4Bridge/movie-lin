@@ -31,78 +31,7 @@ function normalize_lin_preserving_order($lin) {
 
     return [$normalized, $boardNumber];
 }
-function lin_to_pbn(string $lin): string {
-    $tags = parse_lin_tags($lin); // Assumes you have a robust parser
-    $rotation = ['N', 'E', 'S', 'W'];
 
-    // 🔍 Board Info
-    $boardTitle = $tags['ah'][0] ?? 'Board 1';
-    preg_match('/Board\s+(\d+)/i', $boardTitle, $matches);
-    $boardNum = $matches[1] ?? '1';
-
-    // 🔍 Players
-    $players = isset($tags['pn']) ? explode(',', $tags['pn'][0]) : ['North', 'East', 'South', 'West'];
-
-    // 🔍 Deal
-    $mdLine = isset($tags['md'][0]) ? 'md|' . $tags['md'][0] : '';
-    [$dealer, $dealTag] = parse_md_to_pbn_deal($mdLine);
-
-    // 🔍 Vulnerability
-    $vulMap = ['o' => 'None', 'b' => 'Both', 'n' => 'NS', 'e' => 'EW'];
-    $vulCode = $tags['sv'][0] ?? 'o';
-    $vul = $vulMap[$vulCode] ?? 'None';
-
-    // 🔍 Auction
-    $auctionRaw = $tags['mb'] ?? [];
-    $auction = array_map(fn($mb) => str_starts_with($mb, 'mb|') ? substr($mb, 3) : $mb, $auctionRaw);
-    $contractBid = get_final_contract($auction);
-    $contractBid = preg_replace('/^(\d)N$/', '$1NT', $contractBid);
-    $declarer = determine_declarer($dealer, $auction, $contractBid);
-
-    // 🔍 Play
-    $play = $tags['pc'] ?? [];
-
-    // 🔍 Result (placeholder)
-    $result = 7;
-
-    // 🧾 PBN Header
-    $pbn = "[Event \"BBO Tournament\"]\n";
-    $pbn .= "[Site \"Bridge Base Online\"]\n";
-    $pbn .= "[Date \"" . date('Y.m.d') . "\"]\n";
-    $pbn .= "[Board \"$boardNum\"]\n";
-    $pbn .= "[Dealer \"$dealer\"]\n";
-    $pbn .= "[Vulnerable \"$vul\"]\n";
-    $pbn .= "[Contract \"$contractBid\"]\n";
-    $pbn .= "[Declarer \"$declarer\"]\n";
-    $pbn .= "[Result \"$result\"]\n";
-    $pbn .= "[West \"{$players[3]}\"]\n";
-    $pbn .= "[North \"{$players[0]}\"]\n";
-    $pbn .= "[East \"{$players[1]}\"]\n";
-    $pbn .= "[South \"{$players[2]}\"]\n";
-    $pbn .= $dealTag . "\n";
-
-    // 🧾 Auction Block
-    $pbn .= "\nAuction \"$dealer\"\n";
-    foreach ($auction as $i => $bid) {
-        $pbn .= $bid;
-        $pbn .= ($i + 1) % 4 === 0 ? "\n" : " ";
-    }
-
-    // 🧾 Play Block
-    $pbn .= "\nPlay \"$declarer\"\n";
-    $leadIndex = (array_search($dealer, $rotation) + 1) % 4;
-    for ($i = 0; $i < count($play); $i += 4) {
-        for ($j = 0; $j < 4; $j++) {
-            $seat = $rotation[($leadIndex + $j) % 4];
-            $card = $play[$i + $j] ?? '';
-            if ($card !== '') {
-                $pbn .= "$seat $card\n";
-            }
-        }
-    }
-
-    return $pbn;
-}?>
 
 <!DOCTYPE html>
 <html>
