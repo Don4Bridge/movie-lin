@@ -33,6 +33,17 @@ function convert_lin_to_pbn($lin) {
             case 'mb':
                 // Normalize bid: uppercase and fix "N" → "NT"
                 $bid = strtoupper($next);
+                $bid = strtoupper($next);
+
+// Fix "D" → "X" for BridgeComposer compatibility
+if ($bid === 'D') {
+    $bid = 'X';
+}
+
+// Normalize "1N" → "1NT"
+if (preg_match('/^[1-7]N$/', $bid)) {
+    $bid = str_replace('N', 'NT', $bid);
+}
                 if (preg_match('/^[1-7]N$/', $bid)) {
                     $bid = str_replace('N', 'NT', $bid);
                 }
