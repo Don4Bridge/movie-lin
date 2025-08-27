@@ -18,9 +18,6 @@ function normalize_lin($lin) {
 }
 
 function convert_lin_to_pbn($lin) {
-    case 'mb':
-    $auction[] = strtolower($next);
-    break;
     $lines = explode('|', $lin);
     $auction = [];
     $play = [];
@@ -28,44 +25,57 @@ function convert_lin_to_pbn($lin) {
     $vul = 'None';
     $board = '1';
     $deal = '';
-    case 'mb':
-    $auction[] = strtolower($next);
-    break;
-    case 'mb':
-    // Normalize bid: uppercase and fix "N" → "NT"
-    $bid = strtoupper($next);
-    if (preg_match('/^[1-7]N$/', $bid)) {
-        $bid = str_replace('N', 'NT', $bid);
-    
-        foreach ($lines as $i => $val) {
-        $tag = $lines[$i];
+
+    foreach ($lines as $i => $tag) {
         $next = $lines[$i + 1] ?? '';
 
         switch ($tag) {
             case 'mb':
-                $auction[] = strtolower($next);
+                // Normalize bid: uppercase and fix "N" → "NT"
+                $bid = strtoupper($next);
+                if (preg_match('/^[1-7]N$/', $bid)) {
+                    $bid = str_replace('N', 'NT', $bid);
+                }
+                $auction[] = $bid;
                 break;
+
             case 'pc':
                 $play[] = strtoupper($next);
                 break;
+
             case 'ah':
                 if (preg_match('/Board\s+(\d+)/i', $next, $m)) {
                     $board = $m[1];
                 }
                 break;
+
             case 'sv':
                 $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
                 $vul = $vulMap[strtolower($next)] ?? 'None';
                 break;
+
             case 'md':
                 $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
-                $dealer = $dealerMap[$next[0]] ?? 'N';
+                $dealerCode = substr($next, 0, 1);
+                $dealer = $dealerMap[$dealerCode] ?? 'N';
 
-                // Extract hands
                 $hands = explode(',', substr($next, 1));
-                if (count($hands) === 4) {
-                    $deal = "{$dealer}:{$hands[0]} {$hands[1]} {$hands[2]} {$hands[3]}";
+                while (count($hands) < 4) {
+                    $hands[] = ''; // pad missing hands
                 }
+
+                $seatOrder = ['N', 'E', 'S', 'W'];
+                $linOrder = ['S', 'W', 'N', 'E'];
+                $handsBySeat = array_combine($linOrder, $hands);
+
+                $dealerIndex = array_search($dealer, $seatOrder);
+                $rotated = [];
+                for ($j = 0; $j < 4; $j++) {
+                    $seat = $seatOrder[($dealerIndex + $j) % 4];
+                    $rotated[] = $handsBySeat[$seat] ?? '';
+                }
+
+                $deal = $dealer . ':' . implode(' ', $rotated);
                 break;
         }
     }
