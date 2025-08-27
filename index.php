@@ -24,8 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $pbnDownloadLink = 'data:text/plain;charset=utf-8,' . urlencode($pbnContent);
 
         $handviewerLink = 'redirect.php?b=' . urlencode($boardId);
-        file_put_contents(__DIR__ . "/lin_cache/$boardId.lin", $normalizedLin);
-    }
+        $cacheDir = __DIR__ . "/lin_cache";
+        if (!is_dir($cacheDir)) {
+        mkdir($cacheDir, 0775, true); // Creates directory if missing
+}
+        file_put_contents("$cacheDir/$boardId.lin", $normalizedLin);    }
 }
 ?>
 <!DOCTYPE html>
