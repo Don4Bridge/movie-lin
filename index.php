@@ -233,11 +233,12 @@
             $tricks[] = implode(' ', $trick);
         }
     
-        $pbn .= "[$handviewerLink = '';
-    $linContent = '';
-    $pbnContent = '';
-    $linFilename = '';
-    $pbnFilename = '';
+       $pbn .= "[Play \"$openingLeader\"]\n" . implode(':', $tricks) . "\n";
+
+return $pbn;
+}
+
+   
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $url = $_POST['url'];
@@ -245,7 +246,10 @@
         if (preg_match('/[?&]lin=([^&]+)/', $url, $matches)) {
             $lin = urldecode($matches[1]);
             list($normalizedLin, $boardId) = normalize_lin($lin);
-    
+             $linContent = '';
+            $pbnContent = '';
+            $linFilename = '';
+            $pbnFilename = '';
             $linFilename = $boardId . '.lin';
             $pbnFilename = $boardId . '.pbn';
     
