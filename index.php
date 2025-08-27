@@ -1,56 +1,30 @@
 <?php
-function normalize_lin_preserving_order($lin) {
-    if (!is_string($lin) || trim($lin) === '') {
-        error_log("❌ Empty or invalid LIN string.");
-        return ['', 'unknown'];
-    }
+require_once 'includes/lin_parser.php';
+require_once 'includes/pbn_generator.php';
 
-    $parts = explode('|', $lin);
-    $rawPairs = [];
-    $boardNumber = 'unknown';
-
-    for ($i = 0; $i < count($parts) - 1; $i += 2) {
-        $tag = $parts[$i];
-        $value = $parts[$i + 1];
-        $rawPairs[] = [$tag, $value];
-
-        error_log("Parsed tag: $tag | value: $value");
-
-        if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $value, $matches)) {
-            $boardNumber = 'board-' . $matches[1];
-            error_log("✅ Board number detected: $boardNumber");
-        }
-    }
-
-    $normalized = '';
-    foreach ($rawPairs as [$tag, $value]) {
-        $normalized .= $tag . '|' . $value . '|';
-    }
-
-    error_log("✅ Normalized LIN preview: " . substr($normalized, 0, 200));
-
-    return [$normalized, $boardNumber];
-}
-
-// Handle form submission
 $handviewerLink = '';
 $linDownloadLink = '';
+$pbnDownloadLink = '';
 $linFilename = '';
+$pbnFilename = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     $url = $_POST['url'];
-    $lin = '';
 
-    // Extract LIN from URL
     if (preg_match('/[?&]lin=([^&]+)/', $url, $matches)) {
         $lin = urldecode($matches[1]);
-        list($normalizedLin, $boardId) = normalize_lin_preserving_order($lin);
+        list($normalizedLin, $boardId, $tags) = parse_lin($lin);
 
-        // Handviewer link (direct BBO endpoint)
-        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
-
-        // LIN file download (data URI)
         $linFilename = $boardId . '.lin';
+        $pbnFilename = $boardId . '.pbn';
+
+        $pbnContent = generate_pbn($tags);
+
         $linDownloadLink = 'data:text/plain;charset=utf-8,' . urlencode($normalizedLin);
+        $pbnDownloadLink = 'data:text/plain;charset=utf-8,' . urlencode($pbnContent);
+
+        $handviewerLink = 'redirect.php?b=' . urlencode($boardId);
+        file_put_contents(__DIR__ . "/lin_cache/$boardId.lin", $normalizedLin);
     }
 }
 ?>
@@ -92,6 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
             <p><strong>Download LIN File:</strong><br>
                 <a class="download" href="<?= htmlspecialchars($linDownloadLink) ?>" download="<?= htmlspecialchars($linFilename) ?>">
                     Download <?= htmlspecialchars($linFilename) ?>
+                </a>
+            </p>
+            <p><strong>Download PBN File:</strong><br>
+                <a class="download" href="<?= htmlspecialchars($pbnDownloadLink) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">
+                    Download <?= htmlspecialchars($pbnFilename) ?>
                 </a>
             </p>
         </div>
