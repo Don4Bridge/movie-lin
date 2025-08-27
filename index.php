@@ -124,8 +124,7 @@ $deal = $dealer . ':' . implode(' ', $formatted);
     $pbn .= "Play \"$dealer\"\n" . implode(' ', $play) . "\n";
 
     return $pbn;
-}
-$handviewerLink = '';
+}$handviewerLink = '';
 $linContent = '';
 $pbnContent = '';
 $linFilename = '';
