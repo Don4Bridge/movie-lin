@@ -75,7 +75,16 @@ function convert_lin_to_pbn($lin) {
                     $rotated[] = $handsBySeat[$seat] ?? '';
                 }
 
-                $deal = $dealer . ':' . implode(' ', $rotated);
+               function format_hand($hand) {
+    $suits = explode('.', $hand);
+    while (count($suits) < 4) {
+        $suits[] = ''; // pad missing suits
+    }
+    return implode('.', $suits);
+}
+
+$formatted = array_map('format_hand', $rotated);
+$deal = $dealer . ':' . implode(' ', $formatted);
                 break;
         }
     }
