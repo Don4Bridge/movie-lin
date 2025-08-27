@@ -47,7 +47,7 @@ function convert_lin_to_pbn($lin) {
                 $vul = $vulMap[strtolower($next)] ?? 'None';
                 break;
             case 'md':
-                $dealerMap = ['1' => 'N', '2' => 'E', '3' => 'S', '4' => 'W'];
+                $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
                 $dealer = $dealerMap[$next[0]] ?? 'N';
 
                 // Extract hands
