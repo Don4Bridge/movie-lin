@@ -82,7 +82,7 @@ function normalize_lin($lin) {
 
                 function format_hand($hand) {
                     if (trim($hand) === '') {
-                        return '-';
+                        return ' - ';
                     }
 
                     $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
