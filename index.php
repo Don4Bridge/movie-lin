@@ -273,8 +273,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 
         <h3>📥 PBN File: <?= htmlspecialchars($pbnFilename) ?></h3>
         <textarea readonly><?= htmlspecialchars($pbnContent) ?></textarea><br>
-        <a class="download" href="data:text/plain;charset=utf-8,<?= rawurlencode($pbnContent) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">Download PBN</a>
-    </div>
+        <a class="download" id="downloadPBN" href="#" download="<?= htmlspecialchars($pbnFilename) ?>">Download PBN</a>
+    <script>
+        const pbnContent = <?= json_encode($pbnContent) ?>;
+        const pbnBlob = new Blob([pbnContent], { type: 'text/plain;charset=utf-8' });
+        const pbnUrl = URL.createObjectURL(pbnBlob);
+        document.getElementById('downloadPBN').href = pbnUrl;
+</script>  </div>
     <?php endif; ?>
 </body>
 </html>
