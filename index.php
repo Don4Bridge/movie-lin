@@ -237,9 +237,6 @@
 foreach ($tricks as $trick) {
     $pbn .= "$trick\n";
 }
-foreach ($tricks as $trick) {
-    $pbn .= "$trick\n";
-}
 
 return $pbn;
 }
