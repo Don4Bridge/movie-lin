@@ -18,6 +18,7 @@ function normalize_lin($lin) {
 }
 
  function convert_lin_to_pbn($lin) {
+    $lin = urldecode($lin); // ✅ Fixes + signs caused by URL encoding
     $lines = explode('|', $lin);
     $auction = [];
     $play = [];
