@@ -31,6 +31,27 @@ function normalize_lin_preserving_order($lin) {
 
     return [$normalized, $boardNumber];
 }
+
+// Handle form submission
+$handviewerLink = '';
+$linDownloadLink = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
+    $url = $_POST['url'];
+    $lin = '';
+
+    // Extract LIN from URL
+    if (preg_match('/[?&]lin=([^&]+)/', $url, $matches)) {
+        $lin = urldecode($matches[1]);
+        list($normalizedLin, $boardId) = normalize_lin_preserving_order($lin);
+
+        // Handviewer link
+        $handviewerLink = 'https://tinyurl.com/lin2viewer?lin=' . urlencode($normalizedLin);
+
+        // LIN file download (data URI)
+        $linFilename = $boardId . '.lin';
+        $linDownloadLink = 'data:text/plain;charset=utf-8,' . urlencode($normalizedLin);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -40,6 +61,8 @@ function normalize_lin_preserving_order($lin) {
         body { font-family: sans-serif; padding: 2em; max-width: 700px; margin: auto; }
         input[type="text"] { width: 100%; padding: 0.5em; font-size: 1em; }
         button { padding: 0.5em 1em; font-size: 1em; margin-top: 1em; }
+        .output { margin-top: 2em; padding: 1em; background: #f9f9f9; border: 1px solid #ccc; }
+        a.download { display: inline-block; margin-top: 0.5em; padding: 0.3em 0.6em; background: #0077cc; color: white; text-decoration: none; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -49,5 +72,17 @@ function normalize_lin_preserving_order($lin) {
         <input type="text" name="url" required placeholder="https://www.bridgebase.com/tools/movie.html?lin=..."><br>
         <button type="submit">Convert</button>
     </form>
+
+    <?php if ($handviewerLink): ?>
+    <div class="output">
+        <h2>✅ Conversion Results</h2>
+        <p><strong>Handviewer Link:</strong><br>
+            <a href="<?= htmlspecialchars($handviewerLink) ?>" target="_blank"><?= htmlspecialchars($handviewerLink) ?></a>
+        </p>
+        <p><strong>Download LIN File:</strong><br>
+            <a class="download" href="<?= htmlspecialchars($linDownloadLink) ?>" download="<?= htmlspecialchars($linFilename) ?>">Download <?= htmlspecialchars($linFilename) ?></a>
+        </p>
+    </div>
+    <?php endif; ?>
 </body>
 </html>
