@@ -49,8 +49,8 @@ function convert_lin_to_pbn($lin) {
 }
 
 $handviewerLink = '';
-$linDownloadLink = '';
-$pbnDownloadLink = '';
+$linContent = '';
+$pbnContent = '';
 $linFilename = '';
 $pbnFilename = '';
 
@@ -64,10 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $linFilename = $boardId . '.lin';
         $pbnFilename = $boardId . '.pbn';
 
+        $linContent = $normalizedLin;
         $pbnContent = convert_lin_to_pbn($normalizedLin);
-
-        $linDownloadLink = 'data:text/plain;charset=utf-8,' . urlencode($normalizedLin);
-        $pbnDownloadLink = 'data:text/plain;charset=utf-8,' . urlencode($pbnContent);
 
         $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
     }
@@ -78,17 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 <head>
     <title>BBO Movie → Handviewer</title>
     <style>
-        body { font-family: sans-serif; padding: 2em; max-width: 700px; margin: auto; }
+        body { font-family: sans-serif; padding: 2em; max-width: 800px; margin: auto; }
         input[type="text"] { width: 100%; padding: 0.5em; font-size: 1em; }
         button { padding: 0.5em 1em; font-size: 1em; margin-top: 1em; }
         .output { margin-top: 2em; padding: 1em; background: #f9f9f9; border: 1px solid #ccc; }
+        textarea { width: 100%; height: 200px; font-family: monospace; margin-top: 1em; }
         a.download { display: inline-block; margin-top: 0.5em; padding: 0.3em 0.6em; background: #0077cc; color: white; text-decoration: none; border-radius: 4px; }
     </style>
-    <script>
-        function revealExtra() {
-            document.getElementById('extra').style.display = 'block';
-        }
-    </script>
 </head>
 <body>
     <h1>🎬 Convert BBO Movie to Handviewer</h1>
@@ -102,23 +96,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     <div class="output">
         <h2>✅ Conversion Results</h2>
         <p><strong>Handviewer Link:</strong><br>
-            <a href="<?= htmlspecialchars($handviewerLink) ?>" target="_blank" onclick="revealExtra();">
+            <a href="<?= htmlspecialchars($handviewerLink) ?>" target="_blank">
                 <?= htmlspecialchars($handviewerLink) ?>
             </a>
         </p>
 
-        <div id="extra" style="display:none; margin-top:1em;">
-            <p><strong>Download LIN File:</strong><br>
-                <a class="download" href="<?= htmlspecialchars($linDownloadLink) ?>" download="<?= htmlspecialchars($linFilename) ?>">
-                    Download <?= htmlspecialchars($linFilename) ?>
-                </a>
-            </p>
-            <p><strong>Download PBN File:</strong><br>
-                <a class="download" href="<?= htmlspecialchars($pbnDownloadLink) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">
-                    Download <?= htmlspecialchars($pbnFilename) ?>
-                </a>
-            </p>
-        </div>
+        <h3>📥 LIN File: <?= htmlspecialchars($linFilename) ?></h3>
+        <textarea readonly><?= htmlspecialchars($linContent) ?></textarea><br>
+        <a class="download" href="data:text/plain;charset=utf-8,<?= urlencode($linContent) ?>" download="<?= htmlspecialchars($linFilename) ?>">Download LIN</a>
+
+        <h3>📥 PBN File: <?= htmlspecialchars($pbnFilename) ?></h3>
+        <textarea readonly><?= htmlspecialchars($pbnContent) ?></textarea><br>
+        <a class="download" href="data:text/plain;charset=utf-8,<?= urlencode($pbnContent) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">Download PBN</a>
     </div>
     <?php endif; ?>
 </body>
