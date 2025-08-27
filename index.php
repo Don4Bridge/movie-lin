@@ -198,7 +198,10 @@ if (count($nonEmptyHands) === 3) {
         $pbn .= "[Declarer \"$declarer\"]\n";
     }
 
-   $pbn .= "[Auction \"$dealer\"]\n" . implode(' ', $auction) . "\n";
+    $pbn .= "[Auction \"$dealer\"]\n";
+for ($i = 0; $i < count($auction); $i += 4) {
+    $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
+}
     // Group play into tricks of 4 cards each
     $tricks = [];
     for ($i = 0; $i < count($play); $i += 4) {
