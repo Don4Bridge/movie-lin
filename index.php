@@ -77,21 +77,18 @@ function convert_lin_to_pbn($lin) {
 
               function format_hand($hand) {
     $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
-    $suitOrder = ['S', 'H', 'D', 'C'];
-    $currentSuit = 'S'; // default starting suit
+    $currentSuit = null;
 
-    $chars = str_split($hand);
-    foreach ($chars as $char) {
-        if (in_array($char, $suitOrder)) {
+    foreach (str_split($hand) as $char) {
+        if (isset($suits[$char])) {
             $currentSuit = $char;
-        } else {
+        } elseif ($currentSuit) {
             $suits[$currentSuit] .= $char;
         }
     }
 
-    return implode('.', array_map(fn($s) => $suits[$s], $suitOrder));
+    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
 }
-
 $formatted = array_map('format_hand', $rotated);
 $deal = $dealer . ':' . implode(' ', $formatted);
                 break;
