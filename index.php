@@ -33,12 +33,10 @@ function normalize_lin($lin) {
             case 'mb':
                 $bid = strtoupper($next);
 
-                // Fix "D" → "X" for BridgeComposer compatibility
                 if ($bid === 'D') {
                     $bid = 'X';
                 }
 
-                // Normalize "1N" → "1NT"
                 if (preg_match('/^[1-7]N$/', $bid)) {
                     $bid = str_replace('N', 'NT', $bid);
                 }
@@ -68,7 +66,7 @@ function normalize_lin($lin) {
 
                 $hands = explode(',', substr($next, 1));
                 while (count($hands) < 4) {
-                    $hands[] = ''; // pad missing hands
+                    $hands[] = '';
                 }
 
                 $seatOrder = ['N', 'E', 'S', 'W'];
@@ -107,7 +105,6 @@ function normalize_lin($lin) {
         }
     }
 
-    // Determine final contract and declarer
     $contractBid = '';
     $contractIndex = -1;
     for ($i = count($auction) - 1; $i >= 0; $i--) {
@@ -137,7 +134,14 @@ function normalize_lin($lin) {
         }
     }
 
-    // Build PBN output
+    // Determine opening leader
+    $openingLeader = '';
+    if ($declarer !== '') {
+        $seatOrder = ['N', 'E', 'S', 'W'];
+        $leaderIndex = (array_search($declarer, $seatOrder) + 1) % 4;
+        $openingLeader = $seatOrder[$leaderIndex];
+    }
+
     $pbn = "[Event \"BBO Movie\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
     $pbn .= "[Date \"" . date('Y.m.d') . "\"]\n";
@@ -155,7 +159,7 @@ function normalize_lin($lin) {
     }
 
     $pbn .= "\nAuction \"$dealer\"\n" . implode(' ', $auction) . "\n\n";
-    $pbn .= "Play \"$dealer\"\n" . implode(' ', $play) . "\n";
+    $pbn .= "Play \"$openingLeader\"\n" . implode(' ', $play) . "\n";
 
     return $pbn;
 }
