@@ -77,7 +77,7 @@ function convert_lin_to_pbn($lin) {
 
             function format_hand($hand) {
     if (trim($hand) === '') {
-        return '. . . .';
+        return '. . .';
     }
 
     $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
