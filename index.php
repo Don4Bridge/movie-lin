@@ -233,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $linContent = $normalizedLin;
         $pbnContent = convert_lin_to_pbn($normalizedLin);
 
-        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
+        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . rawurlencode($normalizedLin);
     }
 }
 ?>
@@ -269,11 +269,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 
         <h3>📥 LIN File: <?= htmlspecialchars($linFilename) ?></h3>
         <textarea readonly><?= htmlspecialchars($linContent) ?></textarea><br>
-        <a class="download" href="data:text/plain;charset=utf-8,<?= urlencode($linContent) ?>" download="<?= htmlspecialchars($linFilename) ?>">Download LIN</a>
+        <a class="download" href="data:text/plain;charset=utf-8,<?= rawurlencode($linContent) ?>" download="<?= htmlspecialchars($linFilename) ?>">Download LIN</a>
 
         <h3>📥 PBN File: <?= htmlspecialchars($pbnFilename) ?></h3>
         <textarea readonly><?= htmlspecialchars($pbnContent) ?></textarea><br>
-        <a class="download" href="data:text/plain;charset=utf-8,<?= urlencode($pbnContent) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">Download PBN</a>
+        <a class="download" href="data:text/plain;charset=utf-8,<?= rawurlencode($pbnContent) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">Download PBN</a>
     </div>
     <?php endif; ?>
 </body>
