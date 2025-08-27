@@ -17,7 +17,7 @@ function normalize_lin($lin) {
     return [$normalized, $boardId];
 }
 
-function convert_lin_to_pbn($lin) {
+    function convert_lin_to_pbn($lin) {
     $lines = explode('|', $lin);
     $auction = [];
     $play = [];
@@ -31,22 +31,18 @@ function convert_lin_to_pbn($lin) {
 
         switch ($tag) {
             case 'mb':
-                // Normalize bid: uppercase and fix "N" → "NT"
-                $bid = strtoupper($next);
                 $bid = strtoupper($next);
 
-// Fix "D" → "X" for BridgeComposer compatibility
-if ($bid === 'D') {
-    $bid = 'X';
-}
+                // Fix "D" → "X" for BridgeComposer compatibility
+                if ($bid === 'D') {
+                    $bid = 'X';
+                }
 
-// Normalize "1N" → "1NT"
-if (preg_match('/^[1-7]N$/', $bid)) {
-    $bid = str_replace('N', 'NT', $bid);
-}
+                // Normalize "1N" → "1NT"
                 if (preg_match('/^[1-7]N$/', $bid)) {
                     $bid = str_replace('N', 'NT', $bid);
                 }
+
                 $auction[] = $bid;
                 break;
 
@@ -86,30 +82,57 @@ if (preg_match('/^[1-7]N$/', $bid)) {
                     $rotated[] = $handsBySeat[$seat] ?? '';
                 }
 
-            function format_hand($hand) {
-    if (trim($hand) === '') {
-        return '. . .';
-    }
+                function format_hand($hand) {
+                    if (trim($hand) === '') {
+                        return '. . .';
+                    }
 
-    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
-    $currentSuit = null;
+                    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+                    $currentSuit = null;
 
-    foreach (str_split($hand) as $char) {
-        if (isset($suits[$char])) {
-            $currentSuit = $char;
-        } elseif ($currentSuit) {
-            $suits[$currentSuit] .= $char;
-        }
-    }
+                    foreach (str_split($hand) as $char) {
+                        if (isset($suits[$char])) {
+                            $currentSuit = $char;
+                        } elseif ($currentSuit) {
+                            $suits[$currentSuit] .= $char;
+                        }
+                    }
 
-    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
-}
-$formatted = array_map('format_hand', $rotated);
-$deal = $dealer . ':' . implode(' ', $formatted);
+                    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
+                }
+
+                $formatted = array_map('format_hand', $rotated);
+                $deal = $dealer . ':' . implode(' ', $formatted);
                 break;
         }
     }
 
+    // Determine final contract and declarer
+    $contractBid = '';
+    foreach (array_reverse($auction) as $bid) {
+        if (!in_array($bid, ['P', 'X', 'XX'])) {
+            $contractBid = $bid;
+            break;
+        }
+    }
+
+    $seatOrder = ['W', 'N', 'E', 'S'];
+    $dealerIndex = array_search($dealer, $seatOrder);
+    $seats = [];
+    for ($i = 0; $i < count($auction); $i++) {
+        $seats[] = $seatOrder[($dealerIndex + $i) % 4];
+    }
+
+    $strain = preg_replace('/^[1-7]/', '', $contractBid);
+    $declarer = '';
+    for ($i = 0; $i < count($auction); $i++) {
+        if (strpos($auction[$i], $strain) !== false) {
+            $declarer = $seats[$i];
+            break;
+        }
+    }
+
+    // Build PBN output
     $pbn = "[Event \"BBO Movie\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
     $pbn .= "[Date \"" . date('Y.m.d') . "\"]\n";
@@ -119,11 +142,18 @@ $deal = $dealer . ':' . implode(' ', $formatted);
     if ($deal) {
         $pbn .= "[Deal \"$deal\"]\n";
     }
+    if ($contractBid) {
+        $pbn .= "[Contract \"$contractBid\"]\n";
+    }
+    if ($declarer) {
+        $pbn .= "[Declarer \"$declarer\"]\n";
+    }
 
     $pbn .= "\nAuction \"$dealer\"\n" . implode(' ', $auction) . "\n\n";
     $pbn .= "Play \"$dealer\"\n" . implode(' ', $play) . "\n";
 
     return $pbn;
+}
 }$handviewerLink = '';
 $linContent = '';
 $pbnContent = '';
