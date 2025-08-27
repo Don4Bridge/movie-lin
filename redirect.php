@@ -1,7 +1,5 @@
 <?php
-echo "✅ You are inside redirect.php<br>";
-exit;
-ob_start(); // Prevent accidental output before headers
+ob_start(); // Prevent output before headers
 
 $board = $_GET['b'] ?? '';
 $cachePath = __DIR__ . "/lin_cache/$board.lin";
