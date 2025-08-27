@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         list($normalizedLin, $boardId) = normalize_lin_preserving_order($lin);
 
         // Handviewer link
-        $handviewerLink = 'https://tinyurl.com/lin2viewer?lin=' . urlencode($normalizedLin);
+        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
 
         // LIN file download (data URI)
         $linFilename = $boardId . '.lin';
