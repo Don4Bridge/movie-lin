@@ -30,7 +30,6 @@ function normalize_lin_preserving_order($lin) {
     error_log("✅ Normalized LIN preview: " . substr($normalized, 0, 200));
 
     return [$normalized, $boardNumber];
-}
 
 
 <!DOCTYPE html>
