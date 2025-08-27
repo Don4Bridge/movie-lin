@@ -158,7 +158,7 @@ function normalize_lin($lin) {
         $pbn .= "[Declarer \"$declarer\"]\n";
     }
 
-    $pbn .= "\nAuction \"$dealer\"\n" . implode(' ', $auction) . "\n\n";
+   $pbn .= "[Auction \"$dealer\"]\n" . implode(' ', $auction) . "\n";
     // Group play into tricks of 4 cards each
     $tricks = [];
     for ($i = 0; $i < count($play); $i += 4) {
@@ -166,7 +166,8 @@ function normalize_lin($lin) {
     $tricks[] = implode(' ', $trick);
 }
 
-$pbn .= "Play \"$openingLeader\"\n" . implode(', ', $tricks) . "\n";
+$pbn .= "[Play \"$openingLeader\"]\n" . implode(', ', $tricks) . "\n";
+
 
     return $pbn;
 }
