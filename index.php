@@ -159,7 +159,7 @@ function normalize_lin($lin) {
 
     return $pbn;
 }
-}$handviewerLink = '';
+$handviewerLink = '';
 $linContent = '';
 $pbnContent = '';
 $linFilename = '';
