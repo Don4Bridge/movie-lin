@@ -209,7 +209,7 @@ for ($i = 0; $i < count($auction); $i += 4) {
     $tricks[] = implode(' ', $trick);
 }
 
-$pbn .= "[Play \"$openingLeader\"]\n" . implode(', ', $tricks) . "\n";
+$pbn .= "[Play \"$openingLeader\"]\n" . implode(':', $tricks) . "\n";
 
 
     return $pbn;
