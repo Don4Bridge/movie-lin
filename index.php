@@ -215,11 +215,6 @@ function convert_lin_to_pbn($lin) {
     return $pbn;
 }
 
-// Main logic
-$lin = '';
-$pbnContent = '';
-$linContent = '';
-$linFilename = ?>
     <!DOCTYPE html>
     <html>
     <head>
