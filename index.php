@@ -81,24 +81,27 @@ function normalize_lin($lin) {
                     $rotated[] = $handsBySeat[$seat] ?? '';
                 }
 
-                function format_hand($hand) {
-                    if (trim($hand) === '') {
-                        return '. . .';
-                    }
+               function format_hand($hand) {
+    $hand = str_replace('+', '', $hand); // ✅ Remove rogue + signs
+    $hand = trim($hand); // Optional: clean up whitespace
 
-                    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
-                    $currentSuit = null;
+    if ($hand === '') {
+        return '. . .';
+    }
 
-                    foreach (str_split($hand) as $char) {
-                        if (isset($suits[$char])) {
-                            $currentSuit = $char;
-                        } elseif ($currentSuit) {
-                            $suits[$currentSuit] .= $char;
-                        }
-                    }
+    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+    $currentSuit = null;
 
-                    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
-                }
+    foreach (str_split($hand) as $char) {
+        if (isset($suits[$char])) {
+            $currentSuit = $char;
+        } elseif ($currentSuit) {
+            $suits[$currentSuit] .= $char;
+        }
+    }
+
+    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
+}
 
                 $formatted = array_map('format_hand', $rotated);
                 $deal = $dealer . ':' . implode(' ', $formatted);
