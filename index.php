@@ -1,6 +1,52 @@
 <?php
-require_once 'includes/lin_parser.php';
-require_once 'includes/pbn_generator.php';
+function normalize_lin($lin) {
+    $parts = explode('|', $lin);
+    $normalized = '';
+    $boardId = 'unknown';
+
+    for ($i = 0; $i < count($parts) - 1; $i += 2) {
+        $tag = $parts[$i];
+        $val = $parts[$i + 1];
+        $normalized .= $tag . '|' . $val . '|';
+
+        if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $val, $m)) {
+            $boardId = 'board-' . $m[1];
+        }
+    }
+
+    return [$normalized, $boardId];
+}
+
+function convert_lin_to_pbn($lin) {
+    $lines = explode('|', $lin);
+    $meta = [
+        'Event' => 'BBO Movie',
+        'Site' => 'Bridge Base Online',
+        'Date' => date('Y.m.d'),
+        'Board' => '1',
+        'Auction' => '',
+        'Play' => ''
+    ];
+
+    for ($i = 0; $i < count($lines) - 1; $i += 2) {
+        $tag = $lines[$i];
+        $val = $lines[$i + 1];
+
+        if ($tag === 'mb') $meta['Auction'] .= $val . ' ';
+        if ($tag === 'pc') $meta['Play'] .= $val . ' ';
+    }
+
+    $pbn = '';
+    foreach ($meta as $key => $val) {
+        if (in_array($key, ['Auction', 'Play'])) continue;
+        $pbn .= "[$key \"$val\"]\n";
+    }
+
+    $pbn .= "\nAuction \"\"\n" . trim($meta['Auction']) . "\n\n";
+    $pbn .= "Play \"\"\n" . trim($meta['Play']) . "\n";
+
+    return $pbn;
+}
 
 $handviewerLink = '';
 $linDownloadLink = '';
@@ -13,22 +59,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 
     if (preg_match('/[?&]lin=([^&]+)/', $url, $matches)) {
         $lin = urldecode($matches[1]);
-        list($normalizedLin, $boardId, $tags) = parse_lin($lin);
+        list($normalizedLin, $boardId) = normalize_lin($lin);
 
         $linFilename = $boardId . '.lin';
         $pbnFilename = $boardId . '.pbn';
 
-        $pbnContent = generate_pbn($tags);
+        $pbnContent = convert_lin_to_pbn($normalizedLin);
 
         $linDownloadLink = 'data:text/plain;charset=utf-8,' . urlencode($normalizedLin);
         $pbnDownloadLink = 'data:text/plain;charset=utf-8,' . urlencode($pbnContent);
 
-        $handviewerLink = 'redirect.php?b=' . urlencode($boardId);
-        $cacheDir = __DIR__ . "/lin_cache";
-        if (!is_dir($cacheDir)) {
-        mkdir($cacheDir, 0775, true); // Creates directory if missing
-}
-        file_put_contents("$cacheDir/$boardId.lin", $normalizedLin);    }
+        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
+    }
 }
 ?>
 <!DOCTYPE html>
