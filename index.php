@@ -26,6 +26,7 @@ function convert_lin_to_pbn($lin) {
     $vul = 'None';
     $board = '1';
     $deal = '';
+    $handviewerLink = $linFilename = $linContent = $pbnFilename = $pbnContent = '';
 
     foreach ($lines as $i => $tag) {
         $next = $lines[$i + 1] ?? '';
