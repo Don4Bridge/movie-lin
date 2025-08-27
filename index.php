@@ -17,7 +17,6 @@
         return [$normalized, $boardId];
     }
     
-   <?php
 // Utility function: Convert LIN to PBN
 function convert_lin_to_pbn($lin) {
     $lines = !empty($lin) ? explode('|', $lin) : [];
