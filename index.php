@@ -17,7 +17,7 @@ function normalize_lin($lin) {
     return [$normalized, $boardId];
 }
 
- function convert_lin_to_pbn($lin) {
+function convert_lin_to_pbn($lin) {
     $lines = explode('|', $lin);
     $auction = [];
     $play = [];
@@ -73,45 +73,45 @@ function normalize_lin($lin) {
                 $linOrder = ['S', 'W', 'N', 'E'];
                 $handsBySeat = array_combine($linOrder, $hands);
                 // Fill missing hand if only 3 are present
-$nonEmptyHands = array_filter($handsBySeat, fn($h) => trim($h) !== '');
-if (count($nonEmptyHands) === 3) {
-    $suits = ['S', 'H', 'D', 'C'];
-    $deck = [];
-    foreach ($suits as $suit) {
-        foreach (str_split('AKQJT98765432') as $rank) {
-            $deck[] = $rank . $suit;
-        }
-    }
+                $nonEmptyHands = array_filter($handsBySeat, fn($h) => trim($h) !== '');
+                if (count($nonEmptyHands) === 3) {
+                    $suits = ['S', 'H', 'D', 'C'];
+                    $deck = [];
+                    foreach ($suits as $suit) {
+                        foreach (str_split('AKQJT98765432') as $rank) {
+                            $deck[] = $rank . $suit;
+                        }
+                    }
 
-    $knownCards = [];
-    foreach ($nonEmptyHands as $hand) {
-        $currentSuit = null;
-        foreach (str_split($hand) as $char) {
-            if (in_array($char, $suits)) {
-                $currentSuit = $char;
-            } elseif ($currentSuit) {
-                $knownCards[] = $char . $currentSuit;
-            }
-        }
-    }
+                    $knownCards = [];
+                    foreach ($nonEmptyHands as $hand) {
+                        $currentSuit = null;
+                        foreach (str_split($hand) as $char) {
+                            if (in_array($char, $suits)) {
+                                $currentSuit = $char;
+                            } elseif ($currentSuit) {
+                                $knownCards[] = $char . $currentSuit;
+                            }
+                        }
+                    }
 
-    $missingCards = array_diff($deck, $knownCards);
-    $missingHand = [];
-    foreach ($suits as $suit) {
-        $missingHand[$suit] = '';
-    }
-    foreach ($missingCards as $card) {
-        $rank = substr($card, 0, 1);
-        $suit = substr($card, 1, 1);
-        $missingHand[$suit] .= $rank;
-    }
+                    $missingCards = array_diff($deck, $knownCards);
+                    $missingHand = [];
+                    foreach ($suits as $suit) {
+                        $missingHand[$suit] = '';
+                    }
+                    foreach ($missingCards as $card) {
+                        $rank = substr($card, 0, 1);
+                        $suit = substr($card, 1, 1);
+                        $missingHand[$suit] .= $rank;
+                    }
 
-    $missingHandStr = implode('', array_map(fn($suit) => $suit . $missingHand[$suit], $suits));
-    $missingSeat = array_diff(['S', 'W', 'N', 'E'], array_keys($nonEmptyHands));
-    if (count($missingSeat) === 1) {
-        $handsBySeat[array_values($missingSeat)[0]] = $missingHandStr;
-    }
-}
+                    $missingHandStr = implode('', array_map(fn($suit) => $suit . $missingHand[$suit], $suits));
+                    $missingSeat = array_diff(['S', 'W', 'N', 'E'], array_keys($nonEmptyHands));
+                    if (count($missingSeat) === 1) {
+                        $handsBySeat[array_values($missingSeat)[0]] = $missingHandStr;
+                    }
+                }
 
                 $dealerIndex = array_search($dealer, $seatOrder);
                 $rotated = [];
@@ -142,6 +142,23 @@ if (count($nonEmptyHands) === 3) {
                 $formatted = array_map('format_hand', $rotated);
                 $deal = $dealer . ':' . implode(' ', $formatted);
                 break;
+        }
+    }
+
+    // Extract player names from pn| tag
+    $names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
+    foreach ($lines as $i => $tag) {
+        if ($tag === 'pn') {
+            $rawNames = explode('^', $lines[$i + 1] ?? '');
+            if (count($rawNames) === 4) {
+                $names = [
+                    'North' => $rawNames[0],
+                    'East'  => $rawNames[1],
+                    'South' => $rawNames[2],
+                    'West'  => $rawNames[3],
+                ];
+            }
+            break;
         }
     }
 
@@ -198,23 +215,25 @@ if (count($nonEmptyHands) === 3) {
         $pbn .= "[Declarer \"$declarer\"]\n";
     }
 
+    // Add player names
+    $pbn .= "[North \"{$names['North']}\"]\n";
+    $pbn .= "[East \"{$names['East']}\"]\n";
+    $pbn .= "[South \"{$names['South']}\"]\n";
+    $pbn .= "[West \"{$names['West']}\"]\n";
+
     $pbn .= "[Auction \"$dealer\"]\n";
-for ($i = 0; $i < count($auction); $i += 4) {
-    $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
-}
+    for ($i = 0; $i < count($auction); $i += 4) {
+        $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
+    }
+
     // Group play into tricks of 4 cards each
     $tricks = [];
     for ($i = 0; $i < count($play); $i += 4) {
-    $trick = array_slice($play, $i, 4);
-    $tricks[] = implode(' ', $trick);
-}
+        $trick = array_slice($play, $i, 4);
+        $tricks[] = implode(' ', $trick);
+    }
 
-$pbn .= "[Play \"$openingLeader\"]\n" . implode(':', $tricks) . "\n";
-
-
-    return $pbn;
-}
-$handviewerLink = '';
+    $pbn .= "[$handviewerLink = '';
 $linContent = '';
 $pbnContent = '';
 $linFilename = '';
