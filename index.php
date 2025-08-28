@@ -27,7 +27,15 @@ function normalize_lin($lin) {
     $board = '1';
     $deal = '';
 
-    foreach ($lines as $i => $tag) {
+   $lin = urldecode($lin);
+   $lines = explode('|', $lin);
+
+// ✅ Sanitize all segments
+foreach ($lines as &$segment) {
+    $segment = str_replace('+', ' ', $segment);
+}
+unset($segment);
+     foreach ($lines as $i => $tag) {
         $next = $lines[$i + 1] ?? '';
 
         switch ($tag) {
