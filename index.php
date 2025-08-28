@@ -143,7 +143,7 @@ function convert_lin_to_pbn($lin) {
         $openingLeader = $seatOrder[$leaderIndex];
     }
 
-    $names = extract_names_from_lin($lin);
+    $names = extract_names_from_lin($normalizedLin);
 
     $pbn = "[Event \"BBO Movie\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
