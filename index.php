@@ -143,7 +143,7 @@ function convert_lin_to_pbn($lin) {
         $openingLeader = $seatOrder[$leaderIndex];
     }
 
-    $names = extract_names_from_lin($normalizedLin);
+    $names = extract_names_from_lin(normalize_lin($lin)[0]);
 
     $pbn = "[Event \"BBO Movie\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
@@ -209,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $pbnFilename = $boardId . '.pbn';
 
         $linContent = $normalizedLin;
-        $pbnContent = convert_lin_to_pbn($normalizedLin);
+        $pbnContent = convert_lin_to_pbn($lin); // ✅ correct
 
         $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
     }
