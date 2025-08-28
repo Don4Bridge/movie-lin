@@ -44,6 +44,42 @@ function extract_names_from_lin($normalizedLin) {
     return $names;
 }
 
+    function format_hand($hand) {
+    $hand = str_replace('+', '', $hand);
+    $hand = trim($hand);
+    if ($hand === '') return '. . .';
+
+    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+    $currentSuit = null;
+    foreach (str_split($hand) as $char) {
+        if (isset($suits[$char])) {
+            $currentSuifunction extract_names_from_lin($normalizedLin) {
+    $parts = explode('|', $normalizedLin);
+    $names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
+
+    for ($i = 0; $i < count($parts) - 1; $i += 2) {
+        if ($parts[$i] === 'pn') {
+            $raw = str_replace('+', ' ', $parts[$i + 1]);
+            $raw = urldecode($raw);
+
+            // Try both delimiters
+            $rawNames = strpos($raw, '^') !== false ? explode('^', $raw) : explode(',', $raw);
+
+            if (count($rawNames) === 4) {
+                $names = [
+                    'North' => trim($rawNames[0]),
+                    'East'  => trim($rawNames[1]),
+                    'South' => trim($rawNames[2]),
+                    'West'  => trim($rawNames[3]),
+                ];
+            }
+            break;
+        }
+    }
+
+    return $names;
+}
+
 function convert_lin_to_pbn($lin) {
     $lin = urldecode($lin);
     $lines = explode('|', $lin);
@@ -215,6 +251,37 @@ function format_hand($hand) {
     foreach (str_split($hand) as $char) {
         if (isset($suits[$char])) {
             $currentSuit = $char;
+        } elseif ($currentSuit) {
+            $suits[$currentSuit] .= $char;
+        }
+    }
+
+    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
+}
+
+// ✅ POST handler
+$handviewerLink = '';
+$linContent = '';
+$pbnContent = '';
+$linFilename = '';
+$pbnFilename = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
+    $url = $_POST['url'];
+
+    if (preg_match('/[?&]lin=([^&]+)/', $url, $matches)) {
+        $lin = urldecode($matches[1]);
+        list($normalizedLin, $boardId) = normalize_lin($lin);
+
+        $linFilename = $boardId . '.lin';
+        $pbnFilename = $boardId . '.pbn';
+
+        $linContent = $normalizedLin;
+        $pbnContent = convert_lin_to_pbn($lin); // ✅ correct
+
+        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
+    }
+}t = $char;
         } elseif ($currentSuit) {
             $suits[$currentSuit] .= $char;
         }
