@@ -55,9 +55,7 @@ function convert_lin_to_pbn($lin) {
 foreach ($lines as &$segment) {
     $segment = str_replace('+', ' ', $segment);
 }
-list($normalized, $boardId) = normalize_lin($lin);
-$names = extract_names_from_lin($normalized);
-        break;
+
     }
 }
 unset($segment);
