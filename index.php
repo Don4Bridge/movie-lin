@@ -44,19 +44,24 @@ function extract_names_from_lin($normalizedLin) {
     return $names;
 }
 
-    function format_hand($hand) {
+   function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
     if ($hand === '') return '. . .';
 
     $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
     $currentSuit = null;
+
     foreach (str_split($hand) as $char) {
         if (isset($suits[$char])) {
-            $currentSuifunction extract_names_from_lin($normalizedLin) {
-    $parts = explode('|', $normalizedLin);
-    $names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
+            $currentSuit = $char;
+        } elseif ($currentSuit !== null) {
+            $suits[$currentSuit] .= $char;
+        }
+    }
 
+    return "{$suits['S']}.{$suits['H']}.{$suits['D']}.{$suits['C']}";
+}
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         if ($parts[$i] === 'pn') {
             $raw = str_replace('+', ' ', $parts[$i + 1]);
@@ -254,7 +259,8 @@ function convert_lin_to_pbn($lin) {
     }
 
     return $pbn;
-}function format_hand($hand) {
+}
+        function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
     if ($hand === '') return '. . .';
