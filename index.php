@@ -233,7 +233,7 @@ for ($i = 0; $i < count($auction); $i += 4) {
 
 $pbn .= "[Play \"$openingLeader\"]\n";
 for ($i = 0; $i < count($play); $i += 4) {
-    $pbn .= implode(' ', array_slice($play, $i, 4)) . ",\n";
+    $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
 }
 
     return $pbn;
