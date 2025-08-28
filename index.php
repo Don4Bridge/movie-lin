@@ -16,13 +16,14 @@ function normalize_lin($lin) {
 
     return [$normalized, $boardId];
 }
+
 function extract_names_from_lin($normalizedLin) {
     $parts = explode('|', $normalizedLin);
     $names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
 
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         if ($parts[$i] === 'pn') {
-            $raw = str_replace('+', ' ', $parts[$i + 1]); // Fix encoding
+            $raw = str_replace('+', ' ', $parts[$i + 1]);
             $rawNames = explode('^', $raw);
             if (count($rawNames) === 4) {
                 $names = [
@@ -38,11 +39,11 @@ function extract_names_from_lin($normalizedLin) {
 
     return $names;
 }
+
 function convert_lin_to_pbn($lin) {
     $lin = urldecode($lin);
     $lines = explode('|', $lin);
 
-    // ✅ Sanitize segments
     foreach ($lines as &$segment) {
         $segment = str_replace('+', ' ', $segment);
     }
@@ -54,7 +55,8 @@ function convert_lin_to_pbn($lin) {
     $vul = 'None';
     $board = '1';
     $deal = '';
-
+    $contractBid = '';
+    $declarer = '';
     $seatOrder = ['N', 'E', 'S', 'W'];
 
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
@@ -82,14 +84,66 @@ function convert_lin_to_pbn($lin) {
                 break;
 
             case 'sv':
-               
-    // Determine opening leader
+                $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
+                $vul = $vulMap[strtolower($next)] ?? 'None';
+                break;
+
+            case 'md':
+                $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
+                $dealerCode = substr($next, 0, 1);
+                $dealer = $dealerMap[$dealerCode] ?? 'N';
+
+                $hands = explode(',', substr($next, 1));
+                while (count($hands) < 4) $hands[] = '';
+
+                $linOrder = ['S', 'W', 'N', 'E'];
+                $handsBySeat = array_combine($linOrder, $hands);
+
+                $dealerIndex = array_search($dealer, $seatOrder);
+                $rotated = [];
+                for ($j = 0; $j < 4; $j++) {
+                    $seat = $seatOrder[($dealerIndex + $j) % 4];
+                    $rotated[] = $handsBySeat[$seat] ?? '';
+                }
+
+                $formatted = array_map('format_hand', $rotated);
+                $deal = $dealer . ':' . implode(' ', $formatted);
+                break;
+        }
+    }
+
+    for ($i = count($auction) - 1; $i >= 0; $i--) {
+        if (!in_array($auction[$i], ['P', 'X', 'XX'])) {
+            $contractBid = $auction[$i];
+            $contractIndex = $i;
+            break;
+        }
+    }
+
+    if (!empty($contractBid)) {
+        $strain = preg_replace('/^[1-7]/', '', $contractBid);
+        $dealerIndex = array_search($dealer, ['W', 'N', 'E', 'S']);
+        $seats = [];
+        for ($i = 0; $i < count($auction); $i++) {
+            $seats[] = ['W', 'N', 'E', 'S'][($dealerIndex + $i) % 4];
+        }
+
+        $declaringSide = in_array($seats[$contractIndex], ['N', 'S']) ? ['N', 'S'] : ['E', 'W'];
+        for ($i = 0; $i <= $contractIndex; $i++) {
+            if (strpos($auction[$i], $strain) !== false && in_array($seats[$i], $declaringSide)) {
+                $declarer = $seats[$i];
+                break;
+            }
+        }
+    }
+
     $openingLeader = '';
     if ($declarer !== '') {
-        $seatOrder = ['N', 'E', 'S', 'W'];
         $leaderIndex = (array_search($declarer, $seatOrder) + 1) % 4;
         $openingLeader = $seatOrder[$leaderIndex];
     }
+
+    $names = extract_names_from_lin($lin);
 
     $pbn = "[Event \"BBO Movie\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
@@ -97,31 +151,47 @@ function convert_lin_to_pbn($lin) {
     $pbn .= "[Board \"$board\"]\n";
     $pbn .= "[Dealer \"$dealer\"]\n";
     $pbn .= "[Vulnerable \"$vul\"]\n";
-    if ($deal) {
-        $pbn .= "[Deal \"$deal\"]\n";
-    }
-    if ($contractBid) {
-        $pbn .= "[Contract \"$contractBid\"]\n";
-    }
-    if ($declarer) {
-        $pbn .= "[Declarer \"$declarer\"]\n";
-    }$pbn .= "[North \"{$names['North']}\"]\n";
+    if ($deal) $pbn .= "[Deal \"$deal\"]\n";
+    if ($contractBid) $pbn .= "[Contract \"$contractBid\"]\n";
+    if ($declarer) $pbn .= "[Declarer \"$declarer\"]\n";
+
+    $pbn .= "[North \"{$names['North']}\"]\n";
     $pbn .= "[East \"{$names['East']}\"]\n";
     $pbn .= "[South \"{$names['South']}\"]\n";
     $pbn .= "[West \"{$names['West']}\"]\n";
 
-   $pbn .= "[Auction \"$dealer\"]\n";
-for ($i = 0; $i < count($auction); $i += 4) {
-    $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
-}
+    $pbn .= "[Auction \"$dealer\"]\n";
+    for ($i = 0; $i < count($auction); $i += 4) {
+        $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
+    }
 
-$pbn .= "[Play \"$openingLeader\"]\n";
-for ($i = 0; $i < count($play); $i += 4) {
-    $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
-}
+    $pbn .= "[Play \"$openingLeader\"]\n";
+    for ($i = 0; $i < count($play); $i += 4) {
+        $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
+    }
 
     return $pbn;
 }
+
+function format_hand($hand) {
+    $hand = str_replace('+', '', $hand);
+    $hand = trim($hand);
+    if ($hand === '') return '. . .';
+
+    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+    $currentSuit = null;
+    foreach (str_split($hand) as $char) {
+        if (isset($suits[$char])) {
+            $currentSuit = $char;
+        } elseif ($currentSuit) {
+            $suits[$currentSuit] .= $char;
+        }
+    }
+
+    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
+}
+
+// ✅ POST handler
 $handviewerLink = '';
 $linContent = '';
 $pbnContent = '';
@@ -136,15 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         list($normalizedLin, $boardId) = normalize_lin($lin);
 
         $linFilename = $boardId . '.lin';
-        $pbnFilename = $boardId . '.pbn';
-
-        $linContent = $normalizedLin;
-        $pbnContent = convert_lin_to_pbn($normalizedLin);
-
-        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
-    }
-}
-?>
+        $pbnFilename = $boardId . '.p?>
 <!DOCTYPE html>
 <html>
 <head>
