@@ -234,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 
         <h3>ߓ PBN File: <?= htmlspecialchars($pbnFilename) ?></h3>
         <textarea readonly><?= htmlspecialchars($pbnContent) ?></textarea><br>
-        <a class="download" href="data:text/plain;charset=utf-8,<?= urlencode($pbnContent) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">Download PBN</a>
+        <a class="download" href="data:text/plain;charset=utf-8,<?= rawurlencode($pbnContent) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">Download PBN</a>
     </div>
     <?php endif; ?>
 </body>
