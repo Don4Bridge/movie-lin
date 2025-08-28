@@ -98,50 +98,50 @@ function convert_lin_to_pbn($lin) {
                 $dealer = $dealerMap[$dealerCode] ?? 'N';
 
                 $hands = explode(',', substr($next, 1));
-$linOrder = ['S', 'W', 'N', 'E'];
-$hands = array_pad($hands, 4, '');
+                $linOrder = ['S', 'W', 'N', 'E'];
+                $hands = array_pad($hands, 4, '');
 
-$allCards = str_split('AKQJT98765432');
-$suits = ['S', 'H', 'D', 'C'];
-$fullDeck = [];
+                $allCards = str_split('AKQJT98765432');
+                $suits = ['S', 'H', 'D', 'C'];
+                $fullDeck = [];
+                foreach ($suits as $suit) {
+                    foreach ($allCards as $rank) {
+                        $fullDeck[] = $suit . $rank;
+                    }
+                }
 
-foreach ($suits as $suit) {
-    foreach ($allCards as $rank) {
-        $fullDeck[] = $suit . $rank;
-    }
-}
+                $knownCards = [];
+                foreach ($hands as $hand) {
+                    $currentSuit = '';
+                    foreach (str_split($hand) as $char) {
+                        if (in_array($char, $suits)) {
+                            $currentSuit = $char;
+                        } elseif ($currentSuit) {
+                            $knownCards[] = $currentSuit . $char;
+                        }
+                    }
+                }
 
-$knownCards = [];
-foreach ($hands as $hand) {
-    $currentSuit = '';
-    foreach (str_split($hand) as $char) {
-        if (in_array($char, $suits)) {
-            $currentSuit = $char;
-        } elseif ($currentSuit) {
-            $knownCards[] = $currentSuit . $char;
-        }
-    }
-}
+                $missingCards = array_diff($fullDeck, $knownCards);
+                $missingHand = '';
+                $currentSuit = '';
+                foreach ($missingCards as $card) {
+                    $suit = $card[0];
+                    $rank = $card[1];
+                    if ($suit !== $currentSuit) {
+                        $missingHand .= $suit;
+                        $currentSuit = $suit;
+                    }
+                    $missingHand .= $rank;
+                }
 
-$missingCards = array_diff($fullDeck, $knownCards);
-$missingHand = '';
-$currentSuit = '';
-foreach ($missingCards as $card) {
-    $suit = $card[0];
-    $rank = $card[1];
-    if ($suit !== $currentSuit) {
-        $missingHand .= $suit;
-        $currentSuit = $suit;
-    }
-    $missingHand .= $rank;
-}
+                for ($i = 0; $i < 4; $i++) {
+                    if (trim($hands[$i]) === '') {
+                        $hands[$i] = $missingHand;
+                        break;
+                    }
+                }
 
-for ($i = 0; $i < 4; $i++) {
-    if (trim($hands[$i]) === '') {
-        $hands[$i] = $missingHand;
-        break;
-    }
-}
                 $handsBySeat = array_combine($linOrder, $hands);
                 $dealerIndex = array_search($dealer, $seatOrder);
                 $rotated = [];
@@ -216,7 +216,6 @@ for ($i = 0; $i < 4; $i++) {
 
     return $pbn;
 }
-
 function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
