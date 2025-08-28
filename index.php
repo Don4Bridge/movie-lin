@@ -62,28 +62,7 @@ function extract_names_from_lin($normalizedLin) {
 
     return "{$suits['S']}.{$suits['H']}.{$suits['D']}.{$suits['C']}";
 }
-    for ($i = 0; $i < count($parts) - 1; $i += 2) {
-        if ($parts[$i] === 'pn') {
-            $raw = str_replace('+', ' ', $parts[$i + 1]);
-            $raw = urldecode($raw);
-
-            // Try both delimiters
-            $rawNames = strpos($raw, '^') !== false ? explode('^', $raw) : explode(',', $raw);
-
-            if (count($rawNames) === 4) {
-                $names = [
-                    'North' => trim($rawNames[0]),
-                    'East'  => trim($rawNames[1]),
-                    'South' => trim($rawNames[2]),
-                    'West'  => trim($rawNames[3]),
-                ];
-            }
-            break;
-        }
-    }
-
-    return $names;
-}
+    
 
 function convert_lin_to_pbn($lin) {
     $lin = urldecode($lin);
