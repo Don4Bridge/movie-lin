@@ -64,8 +64,14 @@ function convert_lin_to_pbn($lin) {
     $seatOrder = ['N', 'E', 'S', 'W'];
 
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
-        $tag = $lines[$i];
-        $next = $lines[$i + 1] ?? '';
+    $tag = strtolower($lines[$i]);
+    $next = $lines[$i + 1] ?? '';
+
+    switch ($tag) {
+        case 'mb':
+            ...
+        case 'pc':
+            ...
 
         switch ($tag) {
             case 'mb':
