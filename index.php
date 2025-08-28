@@ -239,7 +239,10 @@ unset($segment);
     }
     if ($declarer) {
         $pbn .= "[Declarer \"$declarer\"]\n";
-    }
+    }$pbn .= "[North \"{$names['North']}\"]\n";
+    $pbn .= "[East \"{$names['East']}\"]\n";
+    $pbn .= "[South \"{$names['South']}\"]\n";
+    $pbn .= "[West \"{$names['West']}\"]\n";
 
    $pbn .= "[Auction \"$dealer\"]\n";
 for ($i = 0; $i < count($auction); $i += 4) {
