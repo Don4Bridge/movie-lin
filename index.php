@@ -16,8 +16,7 @@ function normalize_lin($lin) {
 
     return [$normalized, $boardId];
 }
-
- function convert_lin_to_pbn($lin) {
+function convert_lin_to_pbn($lin) {
     $lin = urldecode($lin); // ✅ Fixes + signs caused by URL encoding
     $lines = explode('|', $lin);
     $auction = [];
