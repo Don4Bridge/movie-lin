@@ -33,6 +33,21 @@ function convert_lin_to_pbn($lin) {
 foreach ($lines as &$segment) {
     $segment = str_replace('+', ' ', $segment);
 }
+$names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
+foreach ($lines as $i => $tag) {
+    if ($tag === 'pn') {
+        $rawNames = explode('^', $lines[$i + 1] ?? '');
+        if (count($rawNames) === 4) {
+            $names = [
+                'North' => $rawNames[0],
+                'East'  => $rawNames[1],
+                'South' => $rawNames[2],
+                'West'  => $rawNames[3],
+            ];
+        }
+        break;
+    }
+}
 unset($segment);
      foreach ($lines as $i => $tag) {
         $next = $lines[$i + 1] ?? '';
