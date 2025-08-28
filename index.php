@@ -24,7 +24,11 @@ function extract_names_from_lin($normalizedLin) {
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         if ($parts[$i] === 'pn') {
             $raw = str_replace('+', ' ', $parts[$i + 1]);
-            $rawNames = explode('^', $raw);
+            $raw = urldecode($raw);
+
+            // Try both delimiters
+            $rawNames = strpos($raw, '^') !== false ? explode('^', $raw) : explode(',', $raw);
+
             if (count($rawNames) === 4) {
                 $names = [
                     'North' => trim($rawNames[0]),
