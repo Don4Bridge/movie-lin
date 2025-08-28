@@ -227,7 +227,12 @@ unset($segment);
     }
 
     $pbn .= "\nAuction \"$dealer\"\n" . implode(' ', $auction) . "\n\n";
-    $pbn .= "Play \"$openingLeader\"\n" . implode(' ', $play) . "\n";
+    $pbn .= "Play \"$openingLeader\"\n";
+
+    for ($i = 0; $i < count($play); $i += 4) {
+    $trick = array_slice($play, $i, 4);
+    $pbn .= implode(' ', $trick) . ",\n";
+}
 
     return $pbn;
 }
