@@ -67,27 +67,84 @@ unset($segment);
                 $vul = $vulMap[strtolower($next)] ?? 'None';
                 break;
 
-            case 'md':
-                $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
-                $dealerCode = substr($next, 0, 1);
-                $dealer = $dealerMap[$dealerCode] ?? 'N';
+           case 'md':
+    $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
+    $dealerCode = substr($next, 0, 1);
+    $dealer = $dealerMap[$dealerCode] ?? 'N';
 
-                $hands = explode(',', substr($next, 1));
-                while (count($hands) < 4) {
-                    $hands[] = '';
+    $hands = explode(',', substr($next, 1));
+    while (count($hands) < 4) $hands[] = '';
+
+    $seatOrder = ['N', 'E', 'S', 'W'];
+    $linOrder = ['S', 'W', 'N', 'E'];
+    $handsBySeat = array_combine($linOrder, $hands);
+
+    // ✅ Infer missing fourth hand if only three are present
+    $nonEmptyHands = array_filter($handsBySeat, fn($h) => trim($h) !== '');
+    if (count($nonEmptyHands) === 3) {
+        $suits = ['S', 'H', 'D', 'C'];
+        $deck = [];
+        foreach ($suits as $suit) {
+            foreach (str_split('AKQJT98765432') as $rank) {
+                $deck[] = $rank . $suit;
+            }
+        }
+
+        $knownCards = [];
+        foreach ($nonEmptyHands as $hand) {
+            $currentSuit = null;
+            foreach (str_split($hand) as $char) {
+                if (in_array($char, $suits)) {
+                    $currentSuit = $char;
+                } elseif ($currentSuit) {
+                    $knownCards[] = $char . $currentSuit;
                 }
+            }
+        }
 
-                $seatOrder = ['N', 'E', 'S', 'W'];
-                $linOrder = ['S', 'W', 'N', 'E'];
-                $handsBySeat = array_combine($linOrder, $hands);
+        $missingCards = array_diff($deck, $knownCards);
+        $missingHand = [];
+        foreach ($suits as $suit) $missingHand[$suit] = '';
+        foreach ($missingCards as $card) {
+            $rank = substr($card, 0, 1);
+            $suit = substr($card, 1, 1);
+            $missingHand[$suit] .= $rank;
+        }
 
-                $dealerIndex = array_search($dealer, $seatOrder);
-                $rotated = [];
-                for ($j = 0; $j < 4; $j++) {
-                    $seat = $seatOrder[($dealerIndex + $j) % 4];
-                    $rotated[] = $handsBySeat[$seat] ?? '';
-                }
+        $missingHandStr = implode('', array_map(fn($suit) => $suit . $missingHand[$suit], $suits));
+        $missingSeat = array_diff(['S', 'W', 'N', 'E'], array_keys($nonEmptyHands));
+        if (count($missingSeat) === 1) {
+            $missingKey = array_values($missingSeat)[0];
+            $handsBySeat[$missingKey] = $missingHandStr;
+        }
+    }
 
+    $dealerIndex = array_search($dealer, $seatOrder);
+    $rotated = [];
+    for ($j = 0; $j < 4; $j++) {
+        $seat = $seatOrder[($dealerIndex + $j) % 4];
+        $rotated[] = $handsBySeat[$seat] ?? '';
+    }
+
+    function format_hand($hand) {
+        $hand = str_replace('+', '', $hand);
+        $hand = trim($hand);
+        if ($hand === '') return '. . .';
+        $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+        $currentSuit = null;
+        foreach (str_split($hand) as $char) {
+            if (isset($suits[$char])) {
+                $currentSuit = $char;
+            } elseif ($currentSuit) {
+                $suits[$currentSuit] .= $char;
+            }
+        }
+        return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
+    }
+
+    $formatted = array_map('format_hand', $rotated);
+    $deal = $dealer . ':' . implode(' ', $formatted);
+    break;
                function format_hand($hand) {
     $hand = str_replace('+', '', $hand); // ✅ Remove rogue + signs
     $hand = trim($hand); // Optional: clean up whitespace
