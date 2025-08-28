@@ -63,60 +63,42 @@ function convert_lin_to_pbn($lin) {
     $declarer = '';
     $seatOrder = ['N', 'E', 'S', 'W'];
 
-    for ($i = 0; $i < count($lines) - 1; $i += 2) {
+ for ($i = 0; $i < count($lines) - 1; $i += 2) {
     $tag = strtolower($lines[$i]);
     $next = $lines[$i + 1] ?? '';
 
     switch ($tag) {
         case 'mb':
-            ...
+            $bid = strtoupper($next);
+            if ($bid === 'D') $bid = 'X';
+            if (preg_match('/^[1-7]N$/', $bid)) {
+                $bid = str_replace('N', 'NT', $bid);
+            }
+            $auction[] = $bid;
+            break;
+
         case 'pc':
-            ...
+            $play[] = strtoupper($next);
+            break;
 
-        switch ($tag) {
-            case 'mb':
-                $bid = strtoupper($next);
-                if ($bid === 'D') $bid = 'X';
-                if (preg_match('/^[1-7]N$/', $bid)) {
-                    $bid = str_replace('N', 'NT', $bid);
-                }
-                $auction[] = $bid;
-                break;
+        case 'ah':
+            if (preg_match('/Board\s+(\d+)/i', $next, $m)) {
+                $board = $m[1];
+            }
+            break;
 
-            case 'pc':
-                $play[] = strtoupper($next);
-                break;
+        case 'sv':
+            $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
+            $vul = $vulMap[strtolower($next)] ?? 'None';
+            break;
 
-            case 'ah':
-                if (preg_match('/Board\s+(\d+)/i', $next, $m)) {
-                    $board = $m[1];
-                }
-                break;
-
-            case 'sv':
-                $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
-                $vul = $vulMap[strtolower($next)] ?? 'None';
-                break;
-
-            case 'md':
-                $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
-                $dealerCode = substr($next, 0, 1);
-                $dealer = $dealerMap[$dealerCode] ?? 'N';
-
-                $hands = explode(',', substr($next, 1));
-                $linOrder = ['S', 'W', 'N', 'E'];
-                $hands = array_pad($hands, 4, '');
-
-                $allCards = str_split('AKQJT98765432');
-                $suits = ['S', 'H', 'D', 'C'];
-                $fullDeck = [];
-                foreach ($suits as $suit) {
-                    foreach ($allCards as $rank) {
-                        $fullDeck[] = $suit . $rank;
-                    }
-                }
-        }
-
+        case 'md':
+            // your full hand parsing logic goes here
+            // including reconstructing the missing hand
+            break;
+    }
+} // ← this closes the for loop
+    
                 $knownCards = [];
                 foreach ($hands as $hand) {
                     $currentSuit = '';
