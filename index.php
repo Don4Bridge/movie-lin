@@ -39,8 +39,15 @@ function extract_names_from_lin($normalizedLin) {
     return $names;
 }
 function convert_lin_to_pbn($lin) {
-    $lin = urldecode($lin); // ✅ Fixes + signs caused by URL encoding
+    $lin = urldecode($lin);
     $lines = explode('|', $lin);
+
+    // ✅ Sanitize segments
+    foreach ($lines as &$segment) {
+        $segment = str_replace('+', ' ', $segment);
+    }
+    unset($segment);
+
     $auction = [];
     $play = [];
     $dealer = 'N';
@@ -48,32 +55,19 @@ function convert_lin_to_pbn($lin) {
     $board = '1';
     $deal = '';
 
-   $lin = urldecode($lin);
-   $lines = explode('|', $lin);
+    $seatOrder = ['N', 'E', 'S', 'W'];
 
-// ✅ Sanitize all segments
-foreach ($lines as &$segment) {
-    $segment = str_replace('+', ' ', $segment);
-}
-
-    }
-}
-unset($segment);
-     foreach ($lines as $i => $tag) {
+    for ($i = 0; $i < count($lines) - 1; $i += 2) {
+        $tag = $lines[$i];
         $next = $lines[$i + 1] ?? '';
 
         switch ($tag) {
             case 'mb':
                 $bid = strtoupper($next);
-
-                if ($bid === 'D') {
-                    $bid = 'X';
-                }
-
+                if ($bid === 'D') $bid = 'X';
                 if (preg_match('/^[1-7]N$/', $bid)) {
                     $bid = str_replace('N', 'NT', $bid);
                 }
-
                 $auction[] = $bid;
                 break;
 
@@ -88,145 +82,7 @@ unset($segment);
                 break;
 
             case 'sv':
-                $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
-                $vul = $vulMap[strtolower($next)] ?? 'None';
-                break;
-
-           case 'md':
-    $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
-    $dealerCode = substr($next, 0, 1);
-    $dealer = $dealerMap[$dealerCode] ?? 'N';
-
-    $hands = explode(',', substr($next, 1));
-    while (count($hands) < 4) $hands[] = '';
-
-    $seatOrder = ['N', 'E', 'S', 'W'];
-    $linOrder = ['S', 'W', 'N', 'E'];
-    $handsBySeat = array_combine($linOrder, $hands);
-
-    // ✅ Infer missing fourth hand if only three are present
-    $nonEmptyHands = array_filter($handsBySeat, fn($h) => trim($h) !== '');
-    if (count($nonEmptyHands) === 3) {
-        $suits = ['S', 'H', 'D', 'C'];
-        $deck = [];
-        foreach ($suits as $suit) {
-            foreach (str_split('AKQJT98765432') as $rank) {
-                $deck[] = $rank . $suit;
-            }
-        }
-
-        $knownCards = [];
-        foreach ($nonEmptyHands as $hand) {
-            $currentSuit = null;
-            foreach (str_split($hand) as $char) {
-                if (in_array($char, $suits)) {
-                    $currentSuit = $char;
-                } elseif ($currentSuit) {
-                    $knownCards[] = $char . $currentSuit;
-                }
-            }
-        }
-
-        $missingCards = array_diff($deck, $knownCards);
-        $missingHand = [];
-        foreach ($suits as $suit) $missingHand[$suit] = '';
-        foreach ($missingCards as $card) {
-            $rank = substr($card, 0, 1);
-            $suit = substr($card, 1, 1);
-            $missingHand[$suit] .= $rank;
-        }
-
-        $missingHandStr = implode('', array_map(fn($suit) => $suit . $missingHand[$suit], $suits));
-        $missingSeat = array_diff(['S', 'W', 'N', 'E'], array_keys($nonEmptyHands));
-        if (count($missingSeat) === 1) {
-            $missingKey = array_values($missingSeat)[0];
-            $handsBySeat[$missingKey] = $missingHandStr;
-        }
-    }
-
-    $dealerIndex = array_search($dealer, $seatOrder);
-    $rotated = [];
-    for ($j = 0; $j < 4; $j++) {
-        $seat = $seatOrder[($dealerIndex + $j) % 4];
-        $rotated[] = $handsBySeat[$seat] ?? '';
-    }
-
-    function format_hand($hand) {
-        $hand = str_replace('+', '', $hand);
-        $hand = trim($hand);
-        if ($hand === '') return '. . .';
-        $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
-        $currentSuit = null;
-        foreach (str_split($hand) as $char) {
-            if (isset($suits[$char])) {
-                $currentSuit = $char;
-            } elseif ($currentSuit) {
-                $suits[$currentSuit] .= $char;
-            }
-        }
-        return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
-    }
-
-    $formatted = array_map('format_hand', $rotated);
-    $deal = $dealer . ':' . implode(' ', $formatted);
-    break;
-               function format_hand($hand) {
-    $hand = str_replace('+', '', $hand); // ✅ Remove rogue + signs
-    $hand = trim($hand); // Optional: clean up whitespace
-
-    if ($hand === '') {
-        return '. . .';
-    }
-
-    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
-    $currentSuit = null;
-
-    foreach (str_split($hand) as $char) {
-        if (isset($suits[$char])) {
-            $currentSuit = $char;
-        } elseif ($currentSuit) {
-            $suits[$currentSuit] .= $char;
-        }
-    }
-
-    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
-}
-
-                $formatted = array_map('format_hand', $rotated);
-                $deal = $dealer . ':' . implode(' ', $formatted);
-                break;
-        }
-    }
-
-    $contractBid = '';
-    $contractIndex = -1;
-    for ($i = count($auction) - 1; $i >= 0; $i--) {
-        if (!in_array($auction[$i], ['P', 'X', 'XX'])) {
-            $contractBid = $auction[$i];
-            $contractIndex = $i;
-            break;
-        }
-    }
-
-    $declarer = '';
-    if ($contractBid !== '') {
-        $strain = preg_replace('/^[1-7]/', '', $contractBid);
-        $seatOrder = ['W', 'N', 'E', 'S'];
-        $dealerIndex = array_search($dealer, $seatOrder);
-        $seats = [];
-        for ($i = 0; $i < count($auction); $i++) {
-            $seats[] = $seatOrder[($dealerIndex + $i) % 4];
-        }
-
-        $declaringSide = in_array($seats[$contractIndex], ['N', 'S']) ? ['N', 'S'] : ['E', 'W'];
-        for ($i = 0; $i <= $contractIndex; $i++) {
-            if (strpos($auction[$i], $strain) !== false && in_array($seats[$i], $declaringSide)) {
-                $declarer = $seats[$i];
-                break;
-            }
-        }
-    }
-
+               
     // Determine opening leader
     $openingLeader = '';
     if ($declarer !== '') {
