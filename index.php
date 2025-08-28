@@ -214,6 +214,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
     }
 }
+    <?php } ?>
+
     <!DOCTYPE html>
 <html>
 <head>
