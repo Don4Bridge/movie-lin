@@ -226,7 +226,13 @@ unset($segment);
         $pbn .= "[Declarer \"$declarer\"]\n";
     }
 
-    $pbn .= "\nAuction \"$dealer\"\n" . implode(' ', $auction) . "\n\n";
+    $pbn .= "\nAuction \"$dealer\"\n";
+
+for ($i = 0; $i < count($auction); $i += 4) {
+    $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
+}
+
+$pbn .= "\n"; 
     $pbn .= "Play \"$openingLeader\"\n";
 
     for ($i = 0; $i < count($play); $i += 4) {
