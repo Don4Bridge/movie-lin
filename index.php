@@ -226,18 +226,14 @@ unset($segment);
         $pbn .= "[Declarer \"$declarer\"]\n";
     }
 
-    $pbn .= "\nAuction \"$dealer\"\n";
-
+   $pbn .= "[Auction \"$dealer\"]\n";
 for ($i = 0; $i < count($auction); $i += 4) {
     $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
 }
 
-$pbn .= "\n"; 
-    $pbn .= "Play \"$openingLeader\"\n";
-
-    for ($i = 0; $i < count($play); $i += 4) {
-    $trick = array_slice($play, $i, 4);
-    $pbn .= implode(' ', $trick) . ",\n";
+$pbn .= "[Play \"$openingLeader\"]\n";
+for ($i = 0; $i < count($play); $i += 4) {
+    $pbn .= implode(' ', array_slice($play, $i, 4)) . ",\n";
 }
 
     return $pbn;
