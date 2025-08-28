@@ -206,8 +206,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         list($normalizedLin, $boardId) = normalize_lin($lin);
 
         $linFilename = $boardId . '.lin';
-        $pbnFilename = $boardId . '.p?>
-<!DOCTYPE html>
+        $pbnFilename = $boardId . '.pbn';
+
+        $linContent = $normalizedLin;
+        $pbnContent = convert_lin_to_pbn($normalizedLin);
+
+        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
+    }
+}
+    <!DOCTYPE html>
 <html>
 <head>
     <title>BBO Movie → Handviewer</title>
