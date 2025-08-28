@@ -99,42 +99,52 @@ function convert_lin_to_pbn($lin) {
     $declarer = '';
     $seatOrder = ['N', 'E', 'S', 'W'];
 
- for ($i = 0; $i < count($lines) - 1; $i += 2) {
-    $tag = strtolower($lines[$i]);
-    $next = $lines[$i + 1] ?? '';
+    for ($i = 0; $i < count($lines) - 1; $i += 2) {
+        $tag = strtolower($lines[$i]);
+        $next = $lines[$i + 1] ?? '';
 
-    switch ($tag) {
-        case 'mb':
-            $bid = strtoupper($next);
-            if ($bid === 'D') $bid = 'X';
-            if (preg_match('/^[1-7]N$/', $bid)) {
-                $bid = str_replace('N', 'NT', $bid);
-            }
-            $auction[] = $bid;
-            break;
+        switch ($tag) {
+            case 'mb':
+                $bid = strtoupper($next);
+                if ($bid === 'D') $bid = 'X';
+                if (preg_match('/^[1-7]N$/', $bid)) {
+                    $bid = str_replace('N', 'NT', $bid);
+                }
+                $auction[] = $bid;
+                break;
 
-        case 'pc':
-            $play[] = strtoupper($next);
-            break;
+            case 'pc':
+                $play[] = strtoupper($next);
+                break;
 
-        case 'ah':
-            if (preg_match('/Board\s+(\d+)/i', $next, $m)) {
-                $board = $m[1];
-            }
-            break;
+            case 'ah':
+                if (preg_match('/Board\s+(\d+)/i', $next, $m)) {
+                    $board = $m[1];
+                }
+                break;
 
-        case 'sv':
-            $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
-            $vul = $vulMap[strtolower($next)] ?? 'None';
-            break;
+            case 'sv':
+                $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
+                $vul = $vulMap[strtolower($next)] ?? 'None';
+                break;
 
-        case 'md':
-            // your full hand parsing logic goes here
-            // including reconstructing the missing hand
-            break;
-    }
-} // ← this closes the for loop
-    
+            case 'md':
+                $suits = ['S', 'H', 'D', 'C'];
+                $fullDeck = [];
+                foreach ($suits as $suit) {
+                    foreach (str_split('AKQJT98765432') as $rank) {
+                        $fullDeck[] = $suit . $rank;
+                    }
+                }
+
+                $linOrder = ['S', 'W', 'N', 'E'];
+                $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
+                $dealerCode = substr($next, 0, 1);
+                $dealer = $dealerMap[$dealerCode] ?? 'N';
+
+                $hands = explode(',', substr($next, 1));
+                $hands = array_pad($hands, 4, '');
+
                 $knownCards = [];
                 foreach ($hands as $hand) {
                     $currentSuit = '';
@@ -160,9 +170,9 @@ function convert_lin_to_pbn($lin) {
                     $missingHand .= $rank;
                 }
 
-                for ($i = 0; $i < 4; $i++) {
-                    if (trim($hands[$i]) === '') {
-                        $hands[$i] = $missingHand;
+                for ($j = 0; $j < 4; $j++) {
+                    if (trim($hands[$j]) === '') {
+                        $hands[$j] = $missingHand;
                         break;
                     }
                 }
@@ -229,19 +239,22 @@ function convert_lin_to_pbn($lin) {
     $pbn .= "[South \"{$names['South']}\"]\n";
     $pbn .= "[West \"{$names['West']}\"]\n";
 
-    $pbn .= "[Auction \"$dealer\"]\n";
-    for ($i = 0; $i < count($auction); $i += 4) {
-        $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
+    if (!empty($auction)) {
+        $pbn .= "[Auction \"$dealer\"]\n";
+        for ($i = 0; $i < count($auction); $i += 4) {
+            $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
+        }
     }
 
-    $pbn .= "[Play \"$openingLeader\"]\n";
-    for ($i = 0; $i < count($play); $i += 4) {
-        $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
+    if (!empty($play)) {
+        $pbn .= "[Play \"$openingLeader\"]\n";
+        for ($i = 0; $i < count($play); $i += 4) {
+            $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
+        }
     }
 
     return $pbn;
-}
-function format_hand($hand) {
+}function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
     if ($hand === '') return '. . .';
