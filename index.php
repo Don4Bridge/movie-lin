@@ -115,6 +115,7 @@ function convert_lin_to_pbn($lin) {
                         $fullDeck[] = $suit . $rank;
                     }
                 }
+        }
 
                 $knownCards = [];
                 foreach ($hands as $hand) {
