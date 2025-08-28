@@ -16,6 +16,28 @@ function normalize_lin($lin) {
 
     return [$normalized, $boardId];
 }
+function extract_names_from_lin($normalizedLin) {
+    $parts = explode('|', $normalizedLin);
+    $names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
+
+    for ($i = 0; $i < count($parts) - 1; $i += 2) {
+        if ($parts[$i] === 'pn') {
+            $raw = str_replace('+', ' ', $parts[$i + 1]); // Fix encoding
+            $rawNames = explode('^', $raw);
+            if (count($rawNames) === 4) {
+                $names = [
+                    'North' => trim($rawNames[0]),
+                    'East'  => trim($rawNames[1]),
+                    'South' => trim($rawNames[2]),
+                    'West'  => trim($rawNames[3]),
+                ];
+            }
+            break;
+        }
+    }
+
+    return $names;
+}
 function convert_lin_to_pbn($lin) {
     $lin = urldecode($lin); // ✅ Fixes + signs caused by URL encoding
     $lines = explode('|', $lin);
