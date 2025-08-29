@@ -68,8 +68,7 @@ function convert_lin_to_pbn($lin) {
         $value = $lines[$i + 1] ?? '';
 
         if (in_array($tag, $markerTags)) {
-            echo "Tag: '$tag' | Value: '$value'<br>";
-        } else {
+                 } else {
             echo "Tag: '$tag' | Value: '$value'<br>";
         }
 
