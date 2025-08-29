@@ -64,10 +64,16 @@ function convert_lin_to_pbn($lin) {
     $seatOrder = ['N', 'E', 'S', 'W'];
 
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
-        $tag = $lines[$i];
-        $next = $lines[$i + 1] ?? '';
-	    echo "Tag: '$tag' | Value: '$next'<br>";
-        switch ($tag) {
+    $tag = trim($lines[$i]);
+    $value = $lines[$i + 1] ?? '';
+
+    // Flip tag-value if tag is a marker
+    if (in_array($tag, $markerTags)) {
+        echo "Tag: '$tag' | Value: '$value'<br>";
+    } else {
+        echo "Tag: '$tag' | Value: '$value'<br>";
+    }
+
             case 'mb':
                 $bid = strtoupper($next);
                 if ($bid === 'D') $bid = 'X';
