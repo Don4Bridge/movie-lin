@@ -44,26 +44,6 @@ function extract_names_from_lin($normalizedLin) {
     return $names;
 }
 
-   function format_hand($hand) {
-    $hand = str_replace('+', '', $hand);
-    $hand = trim($hand);
-    if ($hand === '') return '. . .';
-
-    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
-    $currentSuit = null;
-
-    foreach (str_split($hand) as $char) {
-        if (isset($suits[$char])) {
-            $currentSuit = $char;
-        } elseif ($currentSuit !== null) {
-            $suits[$currentSuit] .= $char;
-        }
-    }
-
-    return "{$suits['S']}.{$suits['H']}.{$suits['D']}.{$suits['C']}";
-}
-    
-
 function convert_lin_to_pbn($lin) {
     $lin = urldecode($lin);
     $lines = explode('|', $lin);
@@ -84,7 +64,7 @@ function convert_lin_to_pbn($lin) {
     $seatOrder = ['N', 'E', 'S', 'W'];
 
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
-        $tag = strtolower($lines[$i]);
+        $tag = $lines[$i];
         $next = $lines[$i + 1] ?? '';
 
         switch ($tag) {
@@ -113,21 +93,22 @@ function convert_lin_to_pbn($lin) {
                 break;
 
             case 'md':
-                $suits = ['S', 'H', 'D', 'C'];
-                $fullDeck = [];
-                foreach ($suits as $suit) {
-                    foreach (str_split('AKQJT98765432') as $rank) {
-                        $fullDeck[] = $suit . $rank;
-                    }
-                }
-
-                $linOrder = ['S', 'W', 'N', 'E'];
                 $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
                 $dealerCode = substr($next, 0, 1);
                 $dealer = $dealerMap[$dealerCode] ?? 'N';
 
                 $hands = explode(',', substr($next, 1));
+                $linOrder = ['S', 'W', 'N', 'E'];
                 $hands = array_pad($hands, 4, '');
+
+                $allCards = str_split('AKQJT98765432');
+                $suits = ['S', 'H', 'D', 'C'];
+                $fullDeck = [];
+                foreach ($suits as $suit) {
+                    foreach ($allCards as $rank) {
+                        $fullDeck[] = $suit . $rank;
+                    }
+                }
 
                 $knownCards = [];
                 foreach ($hands as $hand) {
@@ -154,9 +135,9 @@ function convert_lin_to_pbn($lin) {
                     $missingHand .= $rank;
                 }
 
-                for ($j = 0; $j < 4; $j++) {
-                    if (trim($hands[$j]) === '') {
-                        $hands[$j] = $missingHand;
+                for ($i = 0; $i < 4; $i++) {
+                    if (trim($hands[$i]) === '') {
+                        $hands[$i] = $missingHand;
                         break;
                     }
                 }
@@ -206,7 +187,7 @@ function convert_lin_to_pbn($lin) {
         $openingLeader = $seatOrder[$leaderIndex];
     }
 
-    $names = extract_names_from_lin($lin);
+    $names = extract_names_from_lin(normalize_lin($lin)[0]);
 
     $pbn = "[Event \"BBO Movie\"]\n";
     $pbn .= "[Site \"Bridge Base Online\"]\n";
@@ -223,23 +204,19 @@ function convert_lin_to_pbn($lin) {
     $pbn .= "[South \"{$names['South']}\"]\n";
     $pbn .= "[West \"{$names['West']}\"]\n";
 
-    if (!empty($auction)) {
-        $pbn .= "[Auction \"$dealer\"]\n";
-        for ($i = 0; $i < count($auction); $i += 4) {
-            $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
-        }
+    $pbn .= "[Auction \"$dealer\"]\n";
+    for ($i = 0; $i < count($auction); $i += 4) {
+        $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
     }
 
-    if (!empty($play)) {
-        $pbn .= "[Play \"$openingLeader\"]\n";
-        for ($i = 0; $i < count($play); $i += 4) {
-            $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
-        }
+    $pbn .= "[Play \"$openingLeader\"]\n";
+    for ($i = 0; $i < count($play); $i += 4) {
+        $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
     }
 
     return $pbn;
 }
-        function format_hand($hand) {
+function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
     if ($hand === '') return '. . .';
@@ -249,37 +226,6 @@ function convert_lin_to_pbn($lin) {
     foreach (str_split($hand) as $char) {
         if (isset($suits[$char])) {
             $currentSuit = $char;
-        } elseif ($currentSuit) {
-            $suits[$currentSuit] .= $char;
-        }
-    }
-
-    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
-}
-
-// ✅ POST handler
-$handviewerLink = '';
-$linContent = '';
-$pbnContent = '';
-$linFilename = '';
-$pbnFilename = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
-    $url = $_POST['url'];
-
-    if (preg_match('/[?&]lin=([^&]+)/', $url, $matches)) {
-        $lin = urldecode($matches[1]);
-        list($normalizedLin, $boardId) = normalize_lin($lin);
-
-        $linFilename = $boardId . '.lin';
-        $pbnFilename = $boardId . '.pbn';
-
-        $linContent = $normalizedLin;
-        $pbnContent = convert_lin_to_pbn($lin); // ✅ correct
-
-        $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . urlencode($normalizedLin);
-    }
-
         } elseif ($currentSuit) {
             $suits[$currentSuit] .= $char;
         }
