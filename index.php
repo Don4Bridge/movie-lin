@@ -293,11 +293,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
             </a>
         </p>
 
-        <h3>ߓ LIN File: <?= htmlspecialchars($linFilename) ?></h3>
+        <h3>LIN File: <?= htmlspecialchars($linFilename) ?></h3>
         <textarea readonly><?= htmlspecialchars($linContent) ?></textarea><br>
         <a class="download" href="data:text/plain;charset=utf-8,<?= urlencode($linContent) ?>" download="<?= htmlspecialchars($linFilename) ?>">Download LIN</a>
 
-        <h3>ߓ PBN File: <?= htmlspecialchars($pbnFilename) ?></h3>
+        <h3>PBN File: <?= htmlspecialchars($pbnFilename) ?></h3>
         <textarea readonly><?= htmlspecialchars($pbnContent) ?></textarea><br>
         <a class="download" href="data:text/plain;charset=utf-8,<?= rawurlencode($pbnContent) ?>" download="<?= htmlspecialchars($pbnFilename) ?>">Download PBN</a>
     </div>
