@@ -277,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     </style>
 </head>
 <body>
-    <h1>ߎ Convert BBO Movie to Handviewer</h1>
+    <h1>Convert BBO Movie to Lin/PBN/h1>
     <form method="post">
         <label for="url">Paste BBO movie URL:</label><br>
         <input type="text" name="url" required placeholder="https://www.bridgebase.com/tools/movie.html?lin=..."><br>
