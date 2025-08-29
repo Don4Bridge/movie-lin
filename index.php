@@ -61,8 +61,8 @@ function convert_lin_to_pbn($lin) {
     $seatOrder = ['N', 'E', 'S', 'W'];
 
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
-    $tag = $lines[$i];
-    $next = $lines[$i + 1] ?? '';
+    $tag = $lines[$i+1];
+    $next = $lines[$i] ?? '';
     echo "Tag: '$tag' | Value: '$next'<br>";
     if ($tag === 'pn') {
         $next = str_replace('+', ' ', urldecode($next));
