@@ -63,7 +63,7 @@ function convert_lin_to_pbn($lin) {
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
     $tag = $lines[$i];
     $next = $lines[$i + 1] ?? '';
-    error_log("Tag: '$tag' | Value: '$next'");
+    echo("Tag: '$tag' | Value: '$next'");
     if ($tag === 'pn') {
         $next = str_replace('+', ' ', urldecode($next));
     }
