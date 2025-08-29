@@ -46,7 +46,7 @@ function extract_names_from_lin($normalizedLin) {
 
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
-	$lines = explode('|', $normalizedLin);
+    $lines = explode('|', $normalizedLin);
 
     foreach ($lines as &$segment) {
         $segment = str_replace('+', ' ', $segment);
@@ -64,18 +64,18 @@ function convert_lin_to_pbn($lin) {
     $seatOrder = ['N', 'E', 'S', 'W'];
 
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
-    $tag = trim($lines[$i]);
-    $value = $lines[$i + 1] ?? '';
+        $tag = trim($lines[$i]);
+        $value = $lines[$i + 1] ?? '';
 
-    // Flip tag-value if tag is a marker
-    if (in_array($tag, $markerTags)) {
-        echo "Tag: '$tag' | Value: '$value'<br>";
-    } else {
-        echo "Tag: '$tag' | Value: '$value'<br>";
-    }
+        if (in_array($tag, $markerTags)) {
+            echo "Tag: '$tag' | Value: '$value'<br>";
+        } else {
+            echo "Tag: '$tag' | Value: '$value'<br>";
+        }
 
+        switch ($tag) {
             case 'mb':
-                $bid = strtoupper($next);
+                $bid = strtoupper($value);
                 if ($bid === 'D') $bid = 'X';
                 if (preg_match('/^[1-7]N$/', $bid)) {
                     $bid = str_replace('N', 'NT', $bid);
@@ -84,26 +84,26 @@ function convert_lin_to_pbn($lin) {
                 break;
 
             case 'pc':
-                $play[] = strtoupper($next);
+                $play[] = strtoupper($value);
                 break;
 
             case 'ah':
-                if (preg_match('/Board\s+(\d+)/i', $next, $m)) {
+                if (preg_match('/Board\s+(\d+)/i', $value, $m)) {
                     $board = $m[1];
                 }
                 break;
 
             case 'sv':
                 $vulMap = ['n' => 'NS', 'e' => 'EW', 'b' => 'Both', 'o' => 'None', '-' => 'None'];
-                $vul = $vulMap[strtolower($next)] ?? 'None';
+                $vul = $vulMap[strtolower($value)] ?? 'None';
                 break;
 
             case 'md':
                 $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
-                $dealerCode = substr($next, 0, 1);
+                $dealerCode = substr($value, 0, 1);
                 $dealer = $dealerMap[$dealerCode] ?? 'N';
 
-                $hands = explode(',', substr($next, 1));
+                $hands = explode(',', substr($value, 1));
                 $linOrder = ['S', 'W', 'N', 'E'];
                 $hands = array_pad($hands, 4, '');
 
@@ -141,9 +141,9 @@ function convert_lin_to_pbn($lin) {
                     $missingHand .= $rank;
                 }
 
-                for ($i = 0; $i < 4; $i++) {
-                    if (trim($hands[$i]) === '') {
-                        $hands[$i] = $missingHand;
+                for ($j = 0; $j < 4; $j++) {
+                    if (trim($hands[$j]) === '') {
+                        $hands[$j] = $missingHand;
                         break;
                     }
                 }
