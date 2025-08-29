@@ -60,12 +60,21 @@ $contractBid = '';
 $declarer = '';
 $seatOrder = ['N', 'E', 'S', 'W'];
 
-for ($i = 0; $i < count($lines) - 1; $i += 2) {
-$tag = $lines[$i];
-$next = $lines[$i + 1] ?? '';
-    echo "Tag: '$tag' | Value: '$next'<br>";
-if ($tag === 'pn') {
-$next = str_replace('+', ' ', urldecode($next));
+for ($i = 0; $i < count($lines) - 1; $i++) {
+    $tag = trim($lines[$i]);
+
+    // Handle marker tags like 'mb' and 'pc'
+    if ($tag === 'mb' || $tag === 'pc') {
+        $value = $lines[$i + 1] ?? '';
+        echo "Tag: '$tag' | Value: '$value'<br>";
+        $i++; // Skip the value we just processed
+        continue;
+    }
+
+    // Handle normal tag-value pairs
+    $value = $lines[$i + 1] ?? '';
+    echo "Tag: '$tag' | Value: '$value'<br>";
+    $i++; // Skip the value
 }
 
 switch ($tag) {
