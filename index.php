@@ -31,10 +31,10 @@ function extract_names_from_lin($normalizedLin) {
 
             if (count($rawNames) === 4) {
                 $names = [
-                    'North' => trim($rawNames[0]),
-                    'East'  => trim($rawNames[1]),
-                    'South' => trim($rawNames[2]),
-                    'West'  => trim($rawNames[3]),
+                    'South' => trim($rawNames[0]),
+                    'West'  => trim($rawNames[1]),
+                    'North' => trim($rawNames[2]),
+                    'East'  => trim($rawNames[3]),
                 ];
             }
             break;
