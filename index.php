@@ -45,9 +45,9 @@ function extract_names_from_lin($normalizedLin) {
 }
 
 function convert_lin_to_pbn($lin) {
-    $lin = urldecode($lin);
-    $lines = explode('|', $lin);
-
+    list($normalizedLin, $boardId) = normalize_lin($lin);
+    $names = extract_names_from_lin($normalizedLin);
+    $lines = explode('|', $normalizedLin);
     foreach ($lines as &$segment) {
         $segment = str_replace('+', ' ', $segment);
     }
