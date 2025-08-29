@@ -1,5 +1,8 @@
 <?php
 function normalize_lin($lin) {
+    if (strpos($lin, '%') !== false) {
+        $lin = urldecode($lin);
+    }
     $parts = explode('|', $lin);
     $normalized = '';
     $boardId = 'unknown';
