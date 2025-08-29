@@ -46,7 +46,6 @@ function extract_names_from_lin($normalizedLin) {
 
     return $names;
 }
-
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $names = extract_names_from_lin($normalizedLin);
