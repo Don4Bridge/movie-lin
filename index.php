@@ -50,11 +50,6 @@ function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $names = extract_names_from_lin($normalizedLin);
     $lines = explode('|', $normalizedLin);
-    foreach ($lines as &$segment) {
-        $segment = str_replace('+', ' ', $segment);
-    }
-    unset($segment);
-
     $auction = [];
     $play = [];
     $dealer = 'N';
@@ -66,22 +61,26 @@ function convert_lin_to_pbn($lin) {
     $seatOrder = ['N', 'E', 'S', 'W'];
 
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
-        $tag = $lines[$i];
-        $next = $lines[$i + 1] ?? '';
+    $tag = $lines[$i];
+    $next = $lines[$i + 1] ?? '';
 
-        switch ($tag) {
-            case 'mb':
-                $bid = strtoupper($next);
-                if ($bid === 'D') $bid = 'X';
-                if (preg_match('/^[1-7]N$/', $bid)) {
-                    $bid = str_replace('N', 'NT', $bid);
-                }
-                $auction[] = $bid;
-                break;
+    if ($tag === 'pn') {
+        $next = str_replace('+', ' ', urldecode($next));
+    }
 
-            case 'pc':
-                $play[] = strtoupper($next);
-                break;
+    switch ($tag) {
+        case 'mb':
+            $bid = strtoupper($next);
+            if ($bid === 'D') $bid = 'X';
+            if (preg_match('/^[1-7]N$/', $bid)) {
+                $bid = str_replace('N', 'NT', $bid);
+            }
+            $auction[] = $bid;
+            break;
+
+        case 'pc':
+            $play[] = strtoupper($next);
+            break;
 
             case 'ah':
                 if (preg_match('/Board\s+(\d+)/i', $next, $m)) {
