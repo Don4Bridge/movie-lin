@@ -67,12 +67,7 @@ function convert_lin_to_pbn($lin) {
         $tag = trim($lines[$i]);
         $value = $lines[$i + 1] ?? '';
 
-        if (in_array($tag, $markerTags)) {
-                 } else {
-            echo "Tag: '$tag' | Value: '$value'<br>";
-        }
-
-        switch ($tag) {
+            switch ($tag) {
             case 'mb':
                 $bid = strtoupper($value);
                 if ($bid === 'D') $bid = 'X';
