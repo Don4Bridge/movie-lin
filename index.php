@@ -47,7 +47,7 @@ function extract_names_from_lin($normalizedLin) {
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
-
+    $markerTags = ['pn', 'pg', 'qx', 'nt', 'st']; // Add any other marker tags you expect
     foreach ($lines as &$segment) {
         $segment = str_replace('+', ' ', $segment);
     }
