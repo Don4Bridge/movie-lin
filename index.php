@@ -66,7 +66,7 @@ function convert_lin_to_pbn($lin) {
     for ($i = 0; $i < count($lines) - 1; $i += 2) {
         $tag = $lines[$i];
         $next = $lines[$i + 1] ?? '';
-
+	    echo "Tag: '$tag' | Value: '$next'<br>";
         switch ($tag) {
             case 'mb':
                 $bid = strtoupper($next);
