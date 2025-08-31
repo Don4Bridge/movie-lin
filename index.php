@@ -17,7 +17,7 @@ function normalize_lin($lin) {
     }
 
     if ($boardNum !== null) {
-        $normalized .= 'qx|ox' . $boardNum . '|';
+        $normalized .= 'qx|o' . $boardNum . '|';
     }
 
     return [$normalized, $boardId];
