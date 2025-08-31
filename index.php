@@ -101,12 +101,7 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
 
     return $pbn;
 }
-    // Step 2: Append notes
-    if (!empty($notes)) {
-        $pbn .= implode("\n", $notes) . "\n";
-    }
-
-}
+    
 
 function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
