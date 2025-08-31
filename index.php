@@ -22,16 +22,15 @@ function extract_names_from_lin($normalizedLin) {
     $names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
 
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
-        if ($parts[$i] === 'pn') {i + 1]);
-            $raw = urldecode($raw);
+        if ($parts[$i] === 'pn') {
+            $raw = urldecode($parts[$i + 1]);
 
             // Try both delimiters
             $rawNames = strpos($raw, '^') !== false ? explode('^', $raw) : explode(',', $raw);
 
             if (count($rawNames) === 4) {
                 $names = [
-                    'South' => trim($rawNa
-            $raw = str_replace('+', ' ', $parts[$mes[0]),
+                    'South' => trim($rawNames[0]),
                     'West'  => trim($rawNames[1]),
                     'North' => trim($rawNames[2]),
                     'East'  => trim($rawNames[3]),
@@ -43,7 +42,6 @@ function extract_names_from_lin($normalizedLin) {
 
     return $names;
 }
-
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
