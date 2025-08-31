@@ -70,26 +70,22 @@ function reorder_trick_by_leader($trick, $seats) {
 
 function format_auction_with_notes($auction, $annotations, $dealer) {
     $pbn = "[Auction \"$dealer\"]\n";
-    $noteIndex = 1;
     $notes = [];
-    $annotatedBids = [];
+    $noteIndex = 1;
 
-    // Step 1: Annotate each bid individually
-    foreach ($auction as $i => $bid) {
-        $annot = $annotations[$i] ?? '';
-        if ($annot) {
-            $annotatedBids[] = $bid . "=$noteIndex=";
-            $notes[] = "[Note \"$noteIndex:$annot\"]";
+    // Step 1: Annotate each bid inline
+    $annotated = array_map(function($bid, $i) use (&$noteIndex, &$notes, $annotations) {
+        if (!empty($annotations[$i])) {
+            $notes[] = "[Note \"$noteIndex:{$annotations[$i]}\"]";
+            return $bid . "=$noteIndex=";
             $noteIndex++;
-        } else {
-            $annotatedBids[] = $bid;
         }
-    }
+        return $bid;
+    }, $auction, array_keys($auction));
 
-    // Step 2: Group annotated bids into lines of 4
-    $total = count($annotatedBids);
-    for ($i = 0; $i < $total; $i += 4) {
-        $pbn .= implode(' ', array_slice($annotatedBids, $i, 4)) . "\n";
+    // Step 2: Group into lines of 4 without shifting positions
+    foreach (array_chunk($annotated, 4) as $line) {
+        $pbn .= implode(' ', $line) . "\n";
     }
 
     // Step 3: Append notes
@@ -98,24 +94,7 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
     }
 
     return $pbn;
-}function format_hand($hand) {
-    $hand = str_replace('+', '', $hand);
-    $hand = trim($hand);
-    if ($hand === '') return '. . .';
-
-    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
-    $currentSuit = null;
-    foreach (str_split($hand) as $char) {
-        if (isset($suits[$char])) {
-            $currentSuit = $char;
-        } elseif ($currentSuit) {
-            $suits[$currentSuit] .= $char;
-        }
-    }
-
-    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
 }
-
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
