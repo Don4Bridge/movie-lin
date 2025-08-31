@@ -96,8 +96,7 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
     }
 
     return $pbn;
-}
-function format_hand($hand) {
+}function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
     if ($hand === '') return '. . .';
