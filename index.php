@@ -171,6 +171,8 @@ function convert_lin_to_pbn($lin) {
                 break;
 
             case 'md':
+                $value = $tokens[$i + 1] ?? '';
+                $i++;
                 $dealerMap = ['1' => 'S', '2' => 'W', '3' => 'N', '4' => 'E'];
                 $dealerCode = substr($value, 0, 1);
                 $dealer = $dealerMap[$dealerCode] ?? 'N';
