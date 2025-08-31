@@ -76,18 +76,20 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
 
     $annotatedAuction = [];
 
-    // Step 1: Annotate each bid by absolute index
+    // Step 1: Sanitize and annotate each bid
     foreach ($auction as $i => $bid) {
+        $cleanBid = str_replace('!', '', $bid); // Remove "!" from bid
+
         if (!empty($annotations[$i])) {
-            $annotatedAuction[] = $bid . "=$noteIndex=";
+            $annotatedAuction[] = $cleanBid . "=$noteIndex=";
             $notes[] = "[Note \"$noteIndex:{$annotations[$i]}\"]";
             $noteIndex++;
         } else {
-            $annotatedAuction[] = $bid;
+            $annotatedAuction[] = $cleanBid;
         }
     }
 
-    // Step 2: Chunk into lines of 4 bids, preserving order
+    // Step 2: Chunk into lines of 4 bids
     for ($i = 0; $i < count($annotatedAuction); $i += 4) {
         $line = array_slice($annotatedAuction, $i, 4);
         $pbn .= implode(' ', $line) . "\n";
@@ -99,8 +101,7 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
     }
 
     return $pbn;
-}
-    
+}    
 
 function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
