@@ -8,6 +8,7 @@ function normalize_lin($lin) {
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
         $val = $parts[$i + 1];
+        $val = str_replace('+', ' ', $val);  // ✅ Normalize LIN spacing
         $normalized .= $tag . '|' . $val . '|';
 
         if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $val, $m)) {
