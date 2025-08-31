@@ -66,11 +66,6 @@ function reorder_trick_by_leader($trick, $seats) {
     }
     return $ordered;
 }
-function get_next_seat($seat) {
-    $order = ['N', 'E', 'S', 'W'];
-    $index = array_search($seat, $order);
-    return $order[($index + 1) % 4];
-}
 
 function reorder_trick_by_leader($trick, $seats) {
     $ordered = [];
