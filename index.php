@@ -1,40 +1,20 @@
 <?php
 function normalize_lin($lin) {
-    // Ensure input is a string
-    if (!is_string($lin)) {
-        $lin = '';
-    }
-
-    $parts = explode('|', is_string($lin) ? $lin : '');
+    $parts = explode('|', $lin);
     $normalized = '';
-    $boardNum = null;
-    $qxFound = false;
+    $boardId = 'unknown';
 
-    // Loop through tag-value pairs
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
         $val = $parts[$i + 1];
-
-        // Detect qx presence
-        if ($tag === 'qx') {
-            $qxFound = true;
-        }
-
-        // Extract board number from ah tag
-        if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $val, $m)) {
-            $boardNum = intval($m[1]);
-        }
-
         $normalized .= $tag . '|' . $val . '|';
+
+        if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $val, $m)) {
+            $boardId = 'board-' . $m[1];
+        }
     }
 
-    // Inject qx|oX| if missing and board number is known
-    if (!$qxFound && $boardNum !== null) {
-        $qxEntry = 'qx|o' . $boardNum . '|';
-        $normalized = $qxEntry . $normalized;
-    }
-
-    return $normalized;
+    return [$normalized, $boardId];
 }
 
 function extract_names_from_lin($normalizedLin) {
@@ -42,8 +22,7 @@ function extract_names_from_lin($normalizedLin) {
     $names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
 
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
-        if ($parts[$i] === 'pn') {
-            $raw = str_replace('+', ' ', $parts[$i + 1]);
+        if ($parts[$i] === 'pn') {i + 1]);
             $raw = urldecode($raw);
 
             // Try both delimiters
@@ -51,7 +30,8 @@ function extract_names_from_lin($normalizedLin) {
 
             if (count($rawNames) === 4) {
                 $names = [
-                    'South' => trim($rawNames[0]),
+                    'South' => trim($rawNa
+            $raw = str_replace('+', ' ', $parts[$mes[0]),
                     'West'  => trim($rawNames[1]),
                     'North' => trim($rawNames[2]),
                     'East'  => trim($rawNames[3]),
