@@ -138,24 +138,26 @@ function convert_lin_to_pbn($lin) {
     $contractBid = '';
     $declarer = '';
     $seatOrder = ['N', 'E', 'S', 'W'];
+    for ($i = 0; $i < count($tokens); $i++) {
+    switch ($tokens[$i]) {
+        case 'mb':
+            $bid = $tokens[$i + 1];
+            $auction[] = $bid;
+            $lastBidIndex = count($auction) - 1;
+            $i++; // skip bid value
+            break;
 
-    for ($i = 0; $i < count($lines) - 1; $i += 2) {
-        $tag = trim($lines[$i]);
-        $value = $lines[$i + 1] ?? '';
+        case 'an':
+            $annotation = $tokens[$i + 1];
+            if (isset($lastBidIndex)) {
+                $annotations[$lastBidIndex] = $annotation;
+            }
+            $i++; // skip annotation value
+            break;
 
-            switch ($tag) {
-            case 'mb':
-                $bid = strtoupper($value);
-                if ($bid === 'D') $bid = 'X';
-                if (preg_match('/^[1-7]N$/', $bid)) {
-                    $bid = str_replace('N', 'NT', $bid);
-                }
-                $auction[] = $bid;
-                break;
-
-             case 'an':
-               $annotations[] = $value;
-               break;
+        // other cases...
+    }
+}
 
             case 'pc':
                 $play[] = strtoupper($value);
