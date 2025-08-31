@@ -1,7 +1,5 @@
  <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);$tokens = explode('|', $normalizedLin);
-function normalize_lin($lin) {
+ function normalize_lin($lin) {
     $parts = explode('|', $lin);
     $normalized = '';
     $boardId = 'unknown';
