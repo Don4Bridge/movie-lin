@@ -1,6 +1,6 @@
  <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 1);$tokens = explode('|', $normalizedLin);
 function normalize_lin($lin) {
     $parts = explode('|', $lin);
     $normalized = '';
@@ -122,6 +122,7 @@ function format_hand($hand) {
 }
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
+    $tokens = explode('|', $normalizedLin); 
     $lines = explode('|', $normalizedLin);
     $markerTags = ['pn', 'pg', 'qx', 'nt', 'st']; // Add any other marker tags you expect
     foreach ($lines as &$segment) {
@@ -136,6 +137,7 @@ function convert_lin_to_pbn($lin) {
     $board = '1';
     $deal = '';
     $contractBid = '';
+    $annotations = [];
     $declarer = '';
     $seatOrder = ['N', 'E', 'S', 'W'];
     for ($i = 0; $i < count($tokens); $i++) {
