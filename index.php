@@ -307,11 +307,7 @@ function convert_lin_to_pbn($lin) {
     $pbn .= "[South \"{$names['South']}\"]\n";
     $pbn .= "[West \"{$names['West']}\"]\n";
 
-    $pbn .= "[Auction \"$dealer\"]\n";
-    for ($i = 0; $i < count($auction); $i += 4) {
-        $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
-    }
-
+    $pbn .= inject_annotations_into_auction($auction, $annotations, $dealer);
     $pbn .= "[Play \"$openingLeader\"]\n";
 
 $seatOrder = ['N', 'E', 'S', 'W'];
