@@ -36,8 +36,6 @@ function normalize_lin($lin) {
 
     return $normalized;
 }
-?>
-
 
 function extract_names_from_lin($normalizedLin) {
     $parts = explode('|', $normalizedLin);
