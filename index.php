@@ -172,6 +172,12 @@ function convert_lin_to_pbn($lin) {
                 $vul = $vulMap[strtolower($value)] ?? 'None';
                 break;
 
+           case 'mc':
+               $value = $tokens[$i + 1] ?? '';
+               $claimedTricks = intval($value);
+               $i++;
+               break;
+
             case 'md':
                 $value = $tokens[$i + 1] ?? '';
                 $i++;
