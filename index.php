@@ -47,12 +47,10 @@ function extract_names_from_lin($normalizedLin) {
 
     return $names;
 }
-
-// ✅ POST handler
-$handviewerLink = '';function convert_lin_to_pbn($lin) {
+function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
-    $markerTags = ['pn', 'pg', 'qx', 'nt', 'st'];
+    $markerTags = ['pn', 'pg', 'qx', 'nt', 'st']; // Add any other marker tags you expect
     foreach ($lines as &$segment) {
         $segment = str_replace('+', ' ', $segment);
     }
@@ -72,7 +70,7 @@ $handviewerLink = '';function convert_lin_to_pbn($lin) {
         $tag = trim($lines[$i]);
         $value = $lines[$i + 1] ?? '';
 
-        switch ($tag) {
+            switch ($tag) {
             case 'mb':
                 $bid = strtoupper($value);
                 if ($bid === 'D') $bid = 'X';
@@ -214,17 +212,13 @@ $handviewerLink = '';function convert_lin_to_pbn($lin) {
         $pbn .= implode(' ', array_slice($auction, $i, 4)) . "\n";
     }
 
-    $tricks = reorder_tricks($play, $openingLeader, $contractBid);
     $pbn .= "[Play \"$openingLeader\"]\n";
-    foreach ($tricks as $trick) {
-        foreach ($trick as $playItem) {
-            $pbn .= $playItem['seat'] . ' ' . $playItem['card'] . "\n";
-        }
+    for ($i = 0; $i < count($play); $i += 4) {
+        $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
     }
 
     return $pbn;
 }
-
 function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
@@ -243,20 +237,8 @@ function format_hand($hand) {
     return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
 }
 
-function reorder_tricks($playCards, $openingLeader, $contractBid) {
-    $seats = ['N', 'E', 'S', 'W'];
-    $leaderIndex = array_search($openingLeader, $seats);
-    $tricks = [];
-
-    $strain = preg_replace('/^[1-7]/', '', $contractBid);
-    $trump = ($strain === 'NT') ? null : $strain;
-
-    $rankOrder = array_flip(str_split('23456789TJQKA'));
-
-    for ($i = 0; $i < count($playCards); $i += 4) {
-        $trick = [];
-
-        for ($j = 0;
+// ✅ POST handler
+$handviewerLink = '';
 $linContent = '';
 $pbnContent = '';
 $linFilename = '';
