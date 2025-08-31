@@ -307,23 +307,7 @@ for ($i = 0; $i < count($play); $i++) {
 
     return $pbn;
 }
-function format_hand($hand) {
-    $hand = str_replace('+', '', $hand);
-    $hand = trim($hand);
-    if ($hand === '') return '. . .';
 
-    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
-    $currentSuit = null;
-    foreach (str_split($hand) as $char) {
-        if (isset($suits[$char])) {
-            $currentSuit = $char;
-        } elseif ($currentSuit) {
-            $suits[$currentSuit] .= $char;
-        }
-    }
-
-    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
-}
 
 // ✅ POST handler
 $handviewerLink = '';
