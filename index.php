@@ -115,7 +115,6 @@ function format_hand($hand) {
     return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
 }
 
-   }
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
