@@ -3,6 +3,7 @@ function normalize_lin($lin) {
     $parts = explode('|', $lin);
     $normalized = '';
     $boardId = 'unknown';
+    $boardNum = null;  // ✅ Prevents undefined variable warning
 
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
@@ -10,18 +11,17 @@ function normalize_lin($lin) {
         $normalized .= $tag . '|' . $val . '|';
 
         if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $val, $m)) {
-            $boardId = 'board-' . $m[1];
+            $boardNum = $m[1];
+            $boardId = 'board-' . $boardNum;
         }
     }
-// Inject qx|ox tag if board number was found
-    if ($boardNum !== null) {
-        $normalized .= 'qx|o' . $boardNum . '|';
-    }
 
+    if ($boardNum !== null) {
+        $normalized .= 'qx|ox' . $boardNum . '|';
+    }
 
     return [$normalized, $boardId];
 }
-
 function extract_names_from_lin($normalizedLin) {
     $parts = explode('|', $normalizedLin);
     $names = ['North' => '', 'East' => '', 'South' => '', 'West' => ''];
