@@ -74,7 +74,7 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
     $notes = [];
     $annotatedBids = [];
 
-    // Inject annotations directly after each bid
+    // Step 1: Annotate each bid individually
     foreach ($auction as $i => $bid) {
         $annot = $annotations[$i] ?? '';
         if ($annot) {
@@ -86,16 +86,19 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
         }
     }
 
-    // Group into lines of 4 bids
-    for ($i = 0; $i < count($annotatedBids); $i += 4) {
+    // Step 2: Group annotated bids into lines of 4
+    $total = count($annotatedBids);
+    for ($i = 0; $i < $total; $i += 4) {
         $pbn .= implode(' ', array_slice($annotatedBids, $i, 4)) . "\n";
     }
 
-    // Append notes
-    $pbn .= implode("\n", $notes) . "\n";
+    // Step 3: Append notes
+    if (!empty($notes)) {
+        $pbn .= implode("\n", $notes) . "\n";
+    }
+
     return $pbn;
-}
-function format_hand($hand) {
+}function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
     if ($hand === '') return '. . .';
