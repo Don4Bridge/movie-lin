@@ -66,6 +66,72 @@ function reorder_trick_by_leader($trick, $seats) {
     }
     return $ordered;
 }
+function get_next_seat($seat) {
+    $order = ['N', 'E', 'S', 'W'];
+    $index = array_search($seat, $order);
+    return $order[($index + 1) % 4];
+}
+
+function reorder_trick_by_leader($trick, $seats) {
+    $ordered = [];
+    foreach ($seats as $seat) {
+        foreach ($trick as $card) {
+            if ($card['seat'] === $seat) {
+                $ordered[] = $card['card'];
+                break;
+            }
+        }
+    }
+    return $ordered;
+}
+
+function inject_annotations_into_auction($auction, $annotations, $dealer) {
+    $seatOrder = ['W', 'N', 'E', 'S'];
+    $dealerIndex = array_search($dealer, $seatOrder);
+    $seats = [];
+
+    for ($i = 0; $i < count($auction); $i++) {
+        $seats[] = $seatOrder[($dealerIndex + $i) % 4];
+    }
+
+    $pbnAuction = "[Auction \"$dealer\"]\n";
+
+    for ($i = 0; $i < count($auction); $i += 4) {
+        $line = [];
+        for ($j = 0; $j < 4; $j++) {
+            $index = $i + $j;
+            if (!isset($auction[$index])) break;
+
+            $bid = $auction[$index];
+            $annot = $annotations[$index] ?? '';
+            if ($annot) {
+                $bid .= ' !' . $annot;
+            }
+            $line[] = $bid;
+        }
+        $pbnAuction .= implode(' ', $line) . "\n";
+    }
+
+    return $pbnAuction;
+}
+
+function format_hand($hand) {
+    $hand = str_replace('+', '', $hand);
+    $hand = trim($hand);
+    if ($hand === '') return '. . .';
+
+    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+    $currentSuit = null;
+    foreach (str_split($hand) as $char) {
+        if (isset($suits[$char])) {
+            $currentSuit = $char;
+        } elseif ($currentSuit) {
+            $suits[$currentSuit] .= $char;
+        }
+    }
+
+    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
+}
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
