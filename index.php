@@ -17,9 +17,10 @@
         }
     }
 
-    if ($boardNum !== null) {
-        $normalized .= 'qx|o' . $boardNum . '|';
-    }
+ if ($boardNum !== null) {
+    $normalized = 'qx|o' . $boardNum . '|' . $normalized;
+}
+
 
     return [$normalized, $boardId];
 }
