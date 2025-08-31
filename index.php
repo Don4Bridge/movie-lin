@@ -13,6 +13,11 @@ function normalize_lin($lin) {
             $boardId = 'board-' . $m[1];
         }
     }
+// Inject qx|ox tag if board number was found
+    if ($boardNum !== null) {
+        $normalized .= 'qx|o' . $boardNum . '|';
+    }
+
 
     return [$normalized, $boardId];
 }
