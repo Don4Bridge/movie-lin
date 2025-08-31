@@ -115,24 +115,7 @@ function format_hand($hand) {
     return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
 }
 
-    for ($i = 0; $i < count($auction); $i += 4) {
-        $line = [];
-        for ($j = 0; $j < 4; $j++) {
-            $index = $i + $j;
-            if (!isset($auction[$index])) break;
-
-            $bid = $auction[$index];
-            $annot = $annotations[$index] ?? '';
-            if ($annot) {
-                $bid .= ' !' . $annot;
-            }
-            $line[] = $bid;
-        }
-        $pbnAuction .= implode(' ', $line) . "\n";
-    }
-
-    return $pbnAuction;
-}
+   }
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
