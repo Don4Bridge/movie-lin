@@ -95,6 +95,23 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
 
     return $pbn;
 }
+function format_hand($hand) {
+    $hand = str_replace('+', '', $hand);
+    $hand = trim($hand);
+    if ($hand === '') return '. . .';
+
+    $suits = ['S' => '', 'H' => '', 'D' => '', 'C' => ''];
+    $currentSuit = null;
+    foreach (str_split($hand) as $char) {
+        if (isset($suits[$char])) {
+            $currentSuit = $char;
+        } elseif ($currentSuit) {
+            $suits[$currentSuit] .= $char;
+        }
+    }
+
+    return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
+}
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
