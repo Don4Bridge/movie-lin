@@ -156,6 +156,9 @@ function convert_lin_to_pbn($lin) {
             break;
 
             case 'pc':
+                $value = $tokens[$i + 1] ?? '';
+                $play[] = strtoupper($value);
+                $i++;
                 $play[] = strtoupper($value);
                 break;
 
