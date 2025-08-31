@@ -47,6 +47,24 @@ function extract_names_from_lin($normalizedLin) {
 
     return $names;
 }
+function get_next_seat($seat) {
+    $order = ['N', 'E', 'S', 'W'];
+    $index = array_search($seat, $order);
+    return $order[($index + 1) % 4];
+}
+
+function reorder_trick_by_leader($trick, $seats) {
+    $ordered = [];
+    foreach ($seats as $seat) {
+        foreach ($trick as $card) {
+            if ($card['seat'] === $seat) {
+                $ordered[] = $card['card'];
+                break;
+            }
+        }
+    }
+    return $ordered;
+}
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
