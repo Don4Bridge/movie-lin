@@ -72,24 +72,33 @@ function format_auction_with_notes($auction, $annotations, $dealer) {
     $pbn = "[Auction \"$dealer\"]\n";
     $notes = [];
     $noteIndex = 1;
-    $bidIndex = 0;
 
-    // Step 1: Build lines of 4 bids, annotating inline
-    while ($bidIndex < count($auction)) {
-        $line = [];
-        for ($i = 0; $i < 4 && $bidIndex < count($auction); $i++, $bidIndex++) {
-            $bid = $auction[$bidIndex];
-            if (!empty($annotations[$bidIndex])) {
-                $line[] = $bid . "=$noteIndex=";
-                $notes[] = "[Note \"$noteIndex:{$annotations[$bidIndex]}\"]";
-                $noteIndex++;
-            } else {
-                $line[] = $bid;
-            }
+    $annotatedAuction = [];
+
+    // Step 1: Annotate each bid by absolute index
+    foreach ($auction as $i => $bid) {
+        if (!empty($annotations[$i])) {
+            $annotatedAuction[] = $bid . "=$noteIndex=";
+            $notes[] = "[Note \"$noteIndex:{$annotations[$i]}\"]";
+            $noteIndex++;
+        } else {
+            $annotatedAuction[] = $bid;
         }
+    }
+
+    // Step 2: Chunk into lines of 4 bids, preserving order
+    for ($i = 0; $i < count($annotatedAuction); $i += 4) {
+        $line = array_slice($annotatedAuction, $i, 4);
         $pbn .= implode(' ', $line) . "\n";
     }
 
+    // Step 3: Append notes
+    if (!empty($notes)) {
+        $pbn .= implode("\n", $notes) . "\n";
+    }
+
+    return $pbn;
+}
     // Step 2: Append notes
     if (!empty($notes)) {
         $pbn .= implode("\n", $notes) . "\n";
