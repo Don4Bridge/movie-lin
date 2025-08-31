@@ -69,27 +69,30 @@ function reorder_trick_by_leader($trick, $seats) {
 }
 
 
-function format_auction_with_notes($auction, $annotations, $dealer) {
-    $pbn = "[Auction \"$dealer\"]\n";
-    $notes = [];
-    $noteIndex = 1;
+function sanitize_lin_bid_for_pbn($bid) {
+    $bid = str_replace('!', '', $bid); // Remove alert markers
 
-    $annotatedAuction = [];
+    // Map LIN-style bids to PBN equivalents
+    return match ($bid) {
+        'D' => 'X',
+        'R' => 'XX',
+        'p' => 'P',
+        default => $bid,
+    };
+}
 
-    // Step 1: Sanitize and annotate each bid
-    foreach ($auction as $i => $bid) {
-        $cleanBid = str_replace('!', '', $bid); // Remove "!" from bid
+// Step 1: Sanitize and annotate each bid
+foreach ($auction as $i => $bid) {
+    $cleanBid = sanitize_lin_bid_for_pbn($bid);
 
-        if (!empty($annotations[$i])) {
-            $annotatedAuction[] = $cleanBid . "=$noteIndex=";
-            $notes[] = "[Note \"$noteIndex:{$annotations[$i]}\"]";
-            $noteIndex++;
-        } else {
-            $annotatedAuction[] = $cleanBid;
-        }
+    if (!empty($annotations[$i])) {
+        $annotatedAuction[] = $cleanBid . "=$noteIndex=";
+        $notes[] = "[Note \"$noteIndex:{$annotations[$i]}\"]";
+        $noteIndex++;
+    } else {
+        $annotatedAuction[] = $cleanBid;
     }
-
-    // Step 2: Chunk into lines of 4 bids
+}    // Step 2: Chunk into lines of 4 bids
     for ($i = 0; $i < count($annotatedAuction); $i += 4) {
         $line = array_slice($annotatedAuction, $i, 4);
         $pbn .= implode(' ', $line) . "\n";
