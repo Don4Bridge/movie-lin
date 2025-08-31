@@ -5,34 +5,38 @@ function normalize_lin($lin) {
     $boardId = 'unknown';
     $qxValue = '';
 
+<?php
+function normalize_lin($lin) {
+    $parts = explode('|', $lin);
+    $normalized = '';
+    $boardNum = null;
+    $qxFound = false;
 
+    // First pass: scan for qx and ah
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
         $val = $parts[$i + 1];
-        $normalized .= $tag . '|' . $val . '|';
 
-       // Detect qx presence
         if ($tag === 'qx') {
             $qxFound = true;
         }
 
-        // Extract board number from ah tag
         if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $val, $m)) {
             $boardNum = intval($m[1]);
-            $boardId = 'board-' . $boardNum;
         }
 
         $normalized .= $tag . '|' . $val . '|';
     }
 
-    // Inject qx if missing and board number is known
+    // Inject qx|oX| if missing
     if (!$qxFound && $boardNum !== null) {
-        $qxTag = 'qx|o' . $boardNum . '|';
-        $normalized = $qxTag . $normalized;
+        $qxEntry = 'qx|o' . $boardNum . '|';
+        $normalized = $qxEntry . $normalized;
     }
 
     return $normalized;
 }
+?>
 
 
 function extract_names_from_lin($normalizedLin) {
