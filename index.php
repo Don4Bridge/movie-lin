@@ -1,4 +1,4 @@
-<?php
+ <?php
 function normalize_lin($lin) {
     $parts = explode('|', $lin);
     $normalized = '';
@@ -299,3 +299,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
     <?php endif; ?>
 </body>
 </html>
+   
