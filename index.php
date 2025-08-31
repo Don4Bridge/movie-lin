@@ -278,8 +278,7 @@ function convert_lin_to_pbn($lin) {
     $pbn .= "[East \"{$names['East']}\"]\n";
     $pbn .= "[South \"{$names['South']}\"]\n";
     $pbn .= "[West \"{$names['West']}\"]\n";
-
-    $pbn .= inject_annotations_into_auction($auction, $annotations, $dealer);
+    $pbn .= format_auction_with_notes($auction, $annotations, $dealer);
     $pbn .= "[Play \"$openingLeader\"]\n";
 
 $seatOrder = ['N', 'E', 'S', 'W'];
