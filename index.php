@@ -5,7 +5,7 @@ function normalize_lin($lin) {
         $lin = '';
     }
 
-    $parts = explode('|', $lin ?? '');
+    $parts = explode('|', is_string($lin) ? $lin : '');
     $normalized = '';
     $boardNum = null;
     $qxFound = false;
