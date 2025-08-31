@@ -114,16 +114,6 @@ function format_hand($hand) {
 
     return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
 }
-function inject_annotations_into_auction($auction, $annotations, $dealer) {
-    $seatOrder = ['W', 'N', 'E', 'S'];
-    $dealerIndex = array_search($dealer, $seatOrder);
-    $seats = [];
-
-    for ($i = 0; $i < count($auction); $i++) {
-        $seats[] = $seatOrder[($dealerIndex + $i) % 4];
-    }
-
-    $pbnAuction = "[Auction \"$dealer\"]\n";
 
     for ($i = 0; $i < count($auction); $i += 4) {
         $line = [];
