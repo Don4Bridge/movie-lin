@@ -3,11 +3,19 @@ function normalize_lin($lin) {
     $parts = explode('|', $lin);
     $normalized = '';
     $boardId = 'unknown';
+    $qxValue = '';
+
 
     for ($i = 0; $i < count($parts) - 1; $i += 2) {
         $tag = $parts[$i];
         $val = $parts[$i + 1];
         $normalized .= $tag . '|' . $val . '|';
+
+        // Capture qx value
+        if ($tag === 'qx') {
+            $qxValue = $val; // e.g., o2 or ox
+        }
+
 
         if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $val, $m)) {
             $boardId = 'board-' . $m[1];
