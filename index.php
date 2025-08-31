@@ -114,6 +114,35 @@ function format_hand($hand) {
 
     return implode('.', [$suits['S'], $suits['H'], $suits['D'], $suits['C']]);
 }
+function inject_annotations_into_auction($auction, $annotations, $dealer) {
+    $seatOrder = ['W', 'N', 'E', 'S'];
+    $dealerIndex = array_search($dealer, $seatOrder);
+    $seats = [];
+
+    for ($i = 0; $i < count($auction); $i++) {
+        $seats[] = $seatOrder[($dealerIndex + $i) % 4];
+    }
+
+    $pbnAuction = "[Auction \"$dealer\"]\n";
+
+    for ($i = 0; $i < count($auction); $i += 4) {
+        $line = [];
+        for ($j = 0; $j < 4; $j++) {
+            $index = $i + $j;
+            if (!isset($auction[$index])) break;
+
+            $bid = $auction[$index];
+            $annot = $annotations[$index] ?? '';
+            if ($annot) {
+                $bid .= ' !' . $annot;
+            }
+            $line[] = $bid;
+        }
+        $pbnAuction .= implode(' ', $line) . "\n";
+    }
+
+    return $pbnAuction;
+}
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
     $lines = explode('|', $normalizedLin);
@@ -146,6 +175,10 @@ function convert_lin_to_pbn($lin) {
                 }
                 $auction[] = $bid;
                 break;
+
+             case 'an':
+               $annotations[] = $value;
+               break;
 
             case 'pc':
                 $play[] = strtoupper($value);
