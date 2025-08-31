@@ -67,41 +67,36 @@ function reorder_trick_by_leader($trick, $seats) {
     return $ordered;
 }
 
-function inject_annotations_into_auction($auction, $annotations, $dealer) {
-    $seatOrder = ['W', 'N', 'E', 'S'];
-    $dealerIndex = array_search($dealer, $seatOrder);
-    $seats = [];
 
-    for ($i = 0; $i < count($auction); $i++) {
-        $seats[] = $seatOrder[($dealerIndex + $i) % 4];
-    }
-
-    $pbnAuction = "[Auction \"$dealer\"]\n";
-    $notes = [];
+function format_auction_with_notes($auction, $annotations, $dealer) {
+    $pbn = "[Auction \"$dealer\"]\n";
     $noteIndex = 1;
+    $notes = [];
 
     for ($i = 0; $i < count($auction); $i += 4) {
         $line = [];
         for ($j = 0; $j < 4; $j++) {
-            $index = $i + $j;
-            if (!isset($auction[$index])) break;
+            $idx = $i + $j;
+            if (!isset($auction[$idx])) break;
 
-            $bid = $auction[$index];
-            $annot = $annotations[$index] ?? '';
+            $bid = $auction[$idx];
+            $annot = $annotations[$idx] ?? '';
 
             if ($annot) {
-                $line[] = "=$noteIndex=";
+                $line[] = $bid . "=$noteIndex=";
                 $notes[] = "[Note \"$noteIndex:$annot\"]";
                 $noteIndex++;
             } else {
                 $line[] = $bid;
             }
         }
-        $pbnAuction .= implode(' ', $line) . "\n";
+        $pbn .= implode(' ', $line) . "\n";
     }
 
-    return $pbnAuction . implode("\n", $notes) . "\n";
+    $pbn .= implode("\n", $notes) . "\n";
+    return $pbn;
 }
+
 function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
