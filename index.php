@@ -1,5 +1,4 @@
 <?php
-<?php
 function normalize_lin($lin) {
     // Ensure input is a string
     if (!is_string($lin)) {
@@ -37,7 +36,6 @@ function normalize_lin($lin) {
 
     return $normalized;
 }
-?>
 ?>
 
 
