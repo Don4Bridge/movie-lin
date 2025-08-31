@@ -67,19 +67,6 @@ function reorder_trick_by_leader($trick, $seats) {
     return $ordered;
 }
 
-function reorder_trick_by_leader($trick, $seats) {
-    $ordered = [];
-    foreach ($seats as $seat) {
-        foreach ($trick as $card) {
-            if ($card['seat'] === $seat) {
-                $ordered[] = $card['card'];
-                break;
-            }
-        }
-    }
-    return $ordered;
-}
-
 function inject_annotations_into_auction($auction, $annotations, $dealer) {
     $seatOrder = ['W', 'N', 'E', 'S'];
     $dealerIndex = array_search($dealer, $seatOrder);
