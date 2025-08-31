@@ -11,19 +11,29 @@ function normalize_lin($lin) {
         $val = $parts[$i + 1];
         $normalized .= $tag . '|' . $val . '|';
 
-        // Capture qx value
+       // Detect qx presence
         if ($tag === 'qx') {
-            $qxValue = $val; // e.g., o2 or ox
+            $qxFound = true;
         }
 
-
+        // Extract board number from ah tag
         if ($tag === 'ah' && preg_match('/Board\s+(\d+)/i', $val, $m)) {
-            $boardId = 'board-' . $m[1];
+            $boardNum = intval($m[1]);
+            $boardId = 'board-' . $boardNum;
         }
+
+        $normalized .= $tag . '|' . $val . '|';
     }
 
-    return [$normalized, $boardId];
+    // Inject qx if missing and board number is known
+    if (!$qxFound && $boardNum !== null) {
+        $qxTag = 'qx|o' . $boardNum . '|';
+        $normalized = $qxTag . $normalized;
+    }
+
+    return $normalized;
 }
+
 
 function extract_names_from_lin($normalizedLin) {
     $parts = explode('|', $normalizedLin);
