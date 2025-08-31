@@ -157,10 +157,6 @@ function convert_lin_to_pbn($lin) {
             $i++; // skip annotation value
             break;
 
-        // other cases...
-    }
-}
-
             case 'pc':
                 $play[] = strtoupper($value);
                 break;
