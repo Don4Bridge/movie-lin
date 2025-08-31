@@ -231,9 +231,30 @@ function convert_lin_to_pbn($lin) {
     }
 
     $pbn .= "[Play \"$openingLeader\"]\n";
-    for ($i = 0; $i < count($play); $i += 4) {
-        $pbn .= implode(' ', array_slice($play, $i, 4)) . "\n";
+
+$seatOrder = ['N', 'E', 'S', 'W'];
+$currentLeader = $openingLeader;
+$playWithSeats = [];
+
+for ($i = 0; $i < count($play); $i++) {
+    $seat = $seatOrder[($i % 4 + array_search($currentLeader, $seatOrder)) % 4];
+    $playWithSeats[] = ['seat' => $seat, 'card' => $play[$i]];
+
+    if (($i + 1) % 4 === 0) {
+        $trickStart = $i - 3;
+        $seats = [$currentLeader];
+        for ($j = 1; $j < 4; $j++) {
+            $seats[] = get_next_seat($seats[$j - 1]);
+        }
+
+        $trick = array_slice($playWithSeats, $trickStart, 4);
+        $ordered = reorder_trick_by_leader($trick, $seats);
+        $pbn .= implode(' ', $ordered) . "\n";
+
+        // Optional: update leader for next trick if you add winner logic
+        // $currentLeader = $seats[determine_trick_winner_index($ordered, $seats)];
     }
+}
 
     return $pbn;
 }
