@@ -77,6 +77,8 @@ function inject_annotations_into_auction($auction, $annotations, $dealer) {
     }
 
     $pbnAuction = "[Auction \"$dealer\"]\n";
+    $notes = [];
+    $noteIndex = 1;
 
     for ($i = 0; $i < count($auction); $i += 4) {
         $line = [];
@@ -86,17 +88,20 @@ function inject_annotations_into_auction($auction, $annotations, $dealer) {
 
             $bid = $auction[$index];
             $annot = $annotations[$index] ?? '';
+
             if ($annot) {
-                $bid .= ' !' . $annot;
+                $line[] = "=$noteIndex=";
+                $notes[] = "[Note \"$noteIndex:$annot\"]";
+                $noteIndex++;
+            } else {
+                $line[] = $bid;
             }
-            $line[] = $bid;
         }
         $pbnAuction .= implode(' ', $line) . "\n";
     }
 
-    return $pbnAuction;
+    return $pbnAuction . implode("\n", $notes) . "\n";
 }
-
 function format_hand($hand) {
     $hand = str_replace('+', '', $hand);
     $hand = trim($hand);
