@@ -372,6 +372,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
         $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . rawurlencode($normalizedLin);
     }
 }
+ function determine_trick_winner_index($trick, $seats, $trumpSuit = null) {
+    $suitLed = substr($trick[0]['card'], 0, 1);
+    $rankOrder = array_flip(str_split('23456789TJQKA'));
+    $winningIndex = 0;
+    $highestRank = -1;
+    $winningSuit = $suitLed;
+
+    foreach ($trick as $i => $play) {
+        $card = $play['card'];
+        $suit = substr($card, 0, 1);
+        $rank = substr($card, 1);
+
+        $isTrump = $trumpSuit && $suit === $trumpSuit;
+        $isLedSuit = $suit === $suitLed;
+
+        if ($isTrump && $winningSuit !== $trumpSuit) {
+            // Trump beats non-trump
+            $winningIndex = $i;
+            $highestRank = $rankOrder[$rank];
+            $winningSuit = $trumpSuit;
+        } elseif ($suit === $winningSuit && $rankOrder[$rank] > $highestRank) {
+            $winningIndex = $i;
+            $highestRank = $rankOrder[$rank];
+        }
+    }
+
+    return $winningIndex;
+}
 ?>
     <!DOCTYPE html>
 <html>
