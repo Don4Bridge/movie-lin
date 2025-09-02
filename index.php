@@ -133,10 +133,9 @@ function format_hand($hand) {
 }
 function convert_lin_to_pbn($lin) {
     list($normalizedLin, $boardId) = normalize_lin($lin);
-    $tokens = explode('|', $normalizedLin);
+    $tokens = explode('|', $normalizedLin); 
     $lines = explode('|', $normalizedLin);
-    $markerTags = ['pn', 'pg', 'qx', 'nt', 'st'];
-
+    $markerTags = ['pn', 'pg', 'qx', 'nt', 'st']; // Add any other marker tags you expect
     foreach ($lines as &$segment) {
         $segment = str_replace('+', ' ', $segment);
     }
@@ -152,23 +151,22 @@ function convert_lin_to_pbn($lin) {
     $annotations = [];
     $declarer = '';
     $seatOrder = ['N', 'E', 'S', 'W'];
-
     for ($i = 0; $i < count($tokens); $i++) {
-        switch ($tokens[$i]) {
-            case 'mb':
-                $bid = $tokens[$i + 1];
-                $auction[] = $bid;
-                $lastBidIndex = count($auction) - 1;
-                $i++;
-                break;
+    switch ($tokens[$i]) {
+        case 'mb':
+            $bid = $tokens[$i + 1];
+            $auction[] = $bid;
+            $lastBidIndex = count($auction) - 1;
+            $i++; // skip bid value
+            break;
 
-            case 'an':
-                $annotation = $tokens[$i + 1];
-                if (isset($lastBidIndex)) {
-                    $annotations[$lastBidIndex] = $annotation;
-                }
-                $i++;
-                break;
+        case 'an':
+            $annotation = $tokens[$i + 1];
+            if (isset($lastBidIndex)) {
+                $annotations[$lastBidIndex] = $annotation;
+            }
+            $i++; // skip annotation value
+            break;
 
             case 'pc':
                 $value = $tokens[$i + 1] ?? '';
@@ -187,11 +185,11 @@ function convert_lin_to_pbn($lin) {
                 $vul = $vulMap[strtolower($value)] ?? 'None';
                 break;
 
-            case 'mc':
-                $value = $tokens[$i + 1] ?? '';
-                $claimedTricks = intval($value);
-                $i++;
-                break;
+           case 'mc':
+               $value = $tokens[$i + 1] ?? '';
+               $claimedTricks = intval($value);
+               $i++;
+               break;
 
             case 'md':
                 $value = $tokens[$i + 1] ?? '';
@@ -309,45 +307,33 @@ function convert_lin_to_pbn($lin) {
     $pbn .= format_auction_with_notes($auction, $annotations, $dealer);
     $pbn .= "[Play \"$openingLeader\"]\n";
 
-    // 🧠 Determine trump suit
-    $trumpSuit = match (strtolower($strain)) {
-        'nt' => null,
-        's' => 'S',
-        'h' => 'H',
-        'd' => 'D',
-        'c' => 'C',
-        default => null
-    };
+$seatOrder = ['N', 'E', 'S', 'W'];
+$currentLeader = $openingLeader;
+$playWithSeats = [];
 
-    $currentLeader = $openingLeader;
-    $playWithSeats = [];
+for ($i = 0; $i < count($play); $i++) {
+    $seat = $seatOrder[($i % 4 + array_search($currentLeader, $seatOrder)) % 4];
+    $playWithSeats[] = ['seat' => $seat, 'card' => $play[$i]];
 
-    for ($i = 0; $i < count($play); $i++) {
-        $seat = $seatOrder[($i % 4 + array_search($currentLeader, $seatOrder)) % 4];
-        $playWithSeats[] = ['seat' => $seat, 'card' => $play[$i]];
-
-        if (($i + 1) % 4 === 0) {
-            $trickStart = $i - 3;
-            $trick = array_slice($playWithSeats, $trickStart, 4);
-
-            $seats = [$currentLeader];
-            for ($j = 1; $j < 4; $j++) {
-                $seats[] = get_next_seat($seats[$j - 1]);
-            }
-
-            $ordered = reorder_trick_by_leader($trick, $seats);
-            $pbn .= implode(' ', $ordered) . "\n";
-
-            $winnerIndex = determine_trick_winner_index($trick, $seats, $trumpSuit);
-            $currentLeader = $seats[$winnerIndex];
+    if (($i + 1) % 4 === 0) {
+        $trickStart = $i - 3;
+        $seats = [$currentLeader];
+        for ($j = 1; $j < 4; $j++) {
+            $seats[] = get_next_seat($seats[$j - 1]);
         }
+
+        $trick = array_slice($playWithSeats, $trickStart, 4);
+        $ordered = reorder_trick_by_leader($trick, $seats);
+        $pbn .= implode(' ', $ordered) . "\n";
+
+        // Optional: update leader for next trick if you add winner logic
+        // $currentLeader = $seats[determine_trick_winner_index($ordered, $seats)];
     }
+}
 
     return $pbn;
 }
 
-// 🧠 Helper to determine trick winner
-function determine_trick_winner_index($trick, $seats, $trumpSuit
 
 // ✅ POST handler
 $handviewerLink = '';
@@ -371,34 +357,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['url'])) {
 
         $handviewerLink = 'https://www.bridgebase.com/tools/handviewer.html?lin=' . rawurlencode($normalizedLin);
     }
-}
- function determine_trick_winner_index($trick, $seats, $trumpSuit = null) {
-    $suitLed = substr($trick[0]['card'], 0, 1);
-    $rankOrder = array_flip(str_split('23456789TJQKA'));
-    $winningIndex = 0;
-    $highestRank = -1;
-    $winningSuit = $suitLed;
-
-    foreach ($trick as $i => $play) {
-        $card = $play['card'];
-        $suit = substr($card, 0, 1);
-        $rank = substr($card, 1);
-
-        $isTrump = $trumpSuit && $suit === $trumpSuit;
-        $isLedSuit = $suit === $suitLed;
-
-        if ($isTrump && $winningSuit !== $trumpSuit) {
-            // Trump beats non-trump
-            $winningIndex = $i;
-            $highestRank = $rankOrder[$rank];
-            $winningSuit = $trumpSuit;
-        } elseif ($suit === $winningSuit && $rankOrder[$rank] > $highestRank) {
-            $winningIndex = $i;
-            $highestRank = $rankOrder[$rank];
-        }
-    }
-
-    return $winningIndex;
 }
 ?>
     <!DOCTYPE html>
